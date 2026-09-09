@@ -1,0 +1,66 @@
+SHOWSTREAK - TERMS OF USE
+Copyright (c) 2026 TraditionalDimension. All rights reserved.
+
+You may download, install and run Showstreak for use in your game of Balatro.
+You may keep personal backup copies and inspect the supplied API documentation
+and examples for learning and local testing.
+
+Permission to redistribute, re-upload, sell, or include Showstreak code,
+documentation or author-owned assets in another distributed package is not
+granted. This also applies to modified copies of those files. Obtain the
+author's separate permission for uses beyond the permission above. Linking
+to the author's download page does not redistribute the mod and is allowed.
+
+You may create and distribute your own independently written integrations
+that call the public Showstreak API. Declare Showstreak as a dependency;
+do not bundle its files or assets with your integration. The supplied example
+files are for learning and local testing, not a redistribution licence.
+
+Balatro and its original resources, Steamodded, Lovely and other third-party
+works remain subject to their respective owners' terms. These terms grant
+no rights to those works. Showstreak reads the installed game's voice sounds
+at runtime; those original or processed sounds are not included in its player
+archive. See CREDITS.md for resource information.
+
+This is a limited permission to use the mod, not an open-source licence.
+No additional permission is implied by access to the source files.
+
+РУССКИЙ ТЕКСТ
+Copyright (c) 2026 TraditionalDimension. Все права сохранены.
+
+Разрешено скачивать, устанавливать и запускать Showstreak для использования
+в своей игре Balatro, сохранять личные резервные копии, изучать документацию
+API и запускать учебные примеры локально.
+
+Разрешение на распространение, перепубликацию, продажу или включение кода,
+документации и авторских ресурсов Showstreak в чужие распространяемые пакеты
+не предоставляется. Это относится и к изменённым копиям этих файлов.
+Для иных способов использования нужно отдельное разрешение автора.
+Разрешено делиться ссылкой на страницу скачивания автора.
+
+Разрешено создавать и распространять собственные, независимо написанные
+интеграции, вызывающие публичный API Showstreak. Указывайте Showstreak как
+зависимость и не включайте его файлы и ресурсы в свой архив. Поставляемые
+примеры предназначены для изучения и локального тестирования; разрешение
+на их перепубликацию не предоставляется.
+
+Balatro, его исходные ресурсы, Steamodded, Lovely и другие сторонние работы
+остаются под условиями своих правообладателей. Эти условия не предоставляют
+прав на сторонние работы. Голосовые звуки читаются из установленной игры
+во время работы; исходные и обработанные голосовые файлы не входят в архив
+для игроков. Сведения об источниках указаны в CREDITS.md.
+
+Это ограниченное разрешение на использование мода, а не открытая лицензия.
+Доступность исходных файлов не предоставляет дополнительных разрешений.
+
+### Limited permission for Balatro Mod Manager
+
+As an exception to the redistribution restriction above, TraditionalDimension permits Showstreak to be listed in balatro-mod-index and permits Balatro Mod Manager to download, distribute and install unmodified official Showstreak release archives for use in Balatro. This permission covers the author's Showstreak code, documentation and author-owned resources only, preserves the accompanying credits and terms, and does not permit modified releases, unrelated mirrors, resale or inclusion in modpacks. It grants no rights to third-party works.
+
+This exception also applies to the official Showstreak 1.0.0 player archive released by TraditionalDimension, even where its bundled LICENSE predates this exception.
+
+### Ограниченное разрешение для Balatro Mod Manager
+
+В виде исключения из запрета на перепубликацию TraditionalDimension разрешает включение Showstreak в balatro-mod-index и скачивание, распространение и установку неизменённых официальных архивов Showstreak через Balatro Mod Manager для использования в Balatro. Разрешение распространяется только на код, документацию и авторские ресурсы Showstreak, требует сохранения прилагаемых сведений об авторах и условий использования и не разрешает изменённые выпуски, посторонние зеркала, перепродажу или включение в модпаки. Права на сторонние произведения не предоставляются.
+
+Исключение действует и для официального архива Showstreak 1.0.0 для игроков, выпущенного TraditionalDimension, даже если вложенный в него LICENSE был составлен до этого исключения.

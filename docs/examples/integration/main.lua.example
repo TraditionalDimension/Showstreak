@@ -1,0 +1,32 @@
+-- Copy this file as main.lua beside ShowstreakExample.json to install.
+local S=assert(Showstreak,'Showstreak must load before its integration example')
+assert(S.api and S.api.version==1,'This example targets Showstreak API v1')
+local function item(def)
+    local id,reason=S.register_item(def)
+    assert(id,'Showstreak Example item: '..tostring(reason))
+end
+item{
+    id='showstreakexample_spare_hand',kind='prop',effect='hands',value=1,
+    price=2,art='j_joker',content_version=1,
+    loc_txt={
+        ['en-us']={name='Spare Hand',text={'{C:blue}+#1#{} hand each round','during the {C:attention}next run{}'}},
+        ru={name='Запасная рука',text={'{C:blue}+#1#{} рука каждый раунд','в {C:attention}следующем забеге{}'}},
+    },
+}
+item{
+    id='showstreakexample_stage_budget',kind='voucher',effect='money',value=2,
+    price=3,art='v_seed_money',content_version=1,
+    loc_txt={
+        ['en-us']={name='Stage Budget',text={'Start each run with {C:money}+$#1#{}','until Intermission or series end'}},
+        ru={name='Бюджет сцены',text={'{C:money}+$#1#{} в начале забега','до Антракта или конца серии'}},
+    },
+}
+local id,reason=S.register_showman_reaction{
+    id='showstreakexample_spare_hand_bought',event='buy',
+    match={item_id='showstreakexample_spare_hand',source='buy'},priority=60,once=false,
+    text={
+        ['en-us']={'An extra hand. Keeping something up your sleeve?'},
+        ru={'Лишняя рука. Припрятал ещё один козырь?'},
+    },
+}
+assert(id,'Showstreak Example reaction: '..tostring(reason))
