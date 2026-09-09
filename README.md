@@ -4,9 +4,9 @@
 
 The Showman has a challenge for you: keep winning across fresh Balatro runs. Prepare between runs, face new decks and rising stakes, and see how long your streak can last.
 
-**[Download the player archive](https://github.com/TraditionalDimension/Showstreak/releases/latest/download/Showstreak-Players.zip)** · [Nexus Mods](https://www.nexusmods.com/balatro/mods/947) · [All releases](https://github.com/TraditionalDimension/Showstreak/releases)
+**[Download the player archive](https://github.com/TraditionalDimension/Showstreak/releases/latest/download/Showstreak-BMM.zip)** · [Nexus Mods](https://www.nexusmods.com/balatro/mods/947) · [All releases](https://github.com/TraditionalDimension/Showstreak/releases)
 
-This repository hosts the download page, documentation and release notes. Install the attached **Showstreak-Players.zip** from Releases. GitHub's automatically generated source archives contain this documentation repository and are not the playable mod.
+This repository hosts the download page, documentation and release notes. Install the attached **Showstreak-BMM.zip** from Releases. GitHub's automatically generated source archives contain this documentation repository and are not the playable mod.
 
 ## What the mode adds
 
@@ -33,7 +33,7 @@ Install [Steamodded](https://docs.smods.dev/Installation/Installing%20Steamodded
 ## Installation
 
 1. Close Balatro completely.
-2. Download **Showstreak-Players.zip** from [Releases](https://github.com/TraditionalDimension/Showstreak/releases/latest) or obtain the mod on [Nexus Mods](https://www.nexusmods.com/balatro/mods/947).
+2. Download **Showstreak-BMM.zip** from [Releases](https://github.com/TraditionalDimension/Showstreak/releases/latest) or obtain the mod on [Nexus Mods](https://www.nexusmods.com/balatro/mods/947).
 3. Extract its **Showstreak** folder into `%AppData%\Balatro\Mods`.
 4. Check that the path is `%AppData%\Balatro\Mods\Showstreak\main.lua`, without a second nested Showstreak folder.
 5. Restart Balatro. In the main menu, use **To Show** on the Showstreak sign above the profile button.
