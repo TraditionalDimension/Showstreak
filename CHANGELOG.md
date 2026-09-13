@@ -1,5 +1,42 @@
 # Changelog
 
+## 1.1.0 — 2026-09-13
+
+### Added
+
+- **Casting mode**, with separate Easy, Standard and Hard presets. Before each run, choose three of seven offered Jokers to unlock for the series. Fewer choices remain when the locked roster runs out. Unlocking a Joker allows it to appear; it does not grant the card.
+- Joker, the four suit Jokers, Mr. Bones and Yorick are available from the start. Yorick retains its legendary sources.
+- The first Casting card is revealed by default. Four new vouchers reveal positions 2, 4, 6 and 7. Intermission removes these vouchers while preserving unlocked Jokers.
+- New Casting conditions can restrict future appearances of Jokers, consumables, vouchers and packs.
+- **Banner integration:** restrictions from different sources combine. Removing one ban does not override another. Cards already obtained are not removed.
+- Optional **Card Sleeves, Partner and supported starting additions**. Before each run, choose one of up to five options in each enabled category, or continue without one. Offers and selections survive reloads.
+- Starting additions are disabled in all six built-in presets. Enabling them disables Dark Star rewards.
+- **Expanded integration API v1, revision 1.1.0:** register items, conditions, custom effects, ban sources, starting categories and Showman reactions.
+- A separate **ModdingKit** with a working example, API reference and English/Russian PDF guides.
+
+### Improved
+
+- The main-menu panel now highlights the current win streak and personal best. Large values use compact formatting, with full counts available in tooltips.
+- Refined the next-run shop panel, action buttons and remaining-wins indicator. Price tags scale with enlarged packs.
+- Added a preset selector before starting a series and a clear Dark Star eligibility line. Editing a preset switches the draft to Custom; returning from customization preserves the draft.
+- Saved series display their rules profile above Continue, using **Custom** for custom rules.
+- Expanded Showman to **541 reactions in all 15 supported languages**, with contextual expressions, varied delivery, remembered recent lines and short variants for tighter layouts.
+- Updated Showman's presentation to use the author's **32 drawings**, with matching mouth animation where available and reduced-motion support.
+- Completed translations for the new interface, descriptions and integration messages.
+- New series containing Showstreak items or conditions supplied by another mod are ineligible for Dark Stars. Existing series retain their saved content and reward policy.
+
+### Fixed
+
+- Fixed a crash when hovering Casting, Sleeves or Partner in **Extras**, including the saved-preset editor.
+- Corrected tooltips for starting-category tabs, “without an addition” buttons and the category carousel. Long descriptions now wrap correctly.
+- Empty starting categories no longer ask players to choose “1 of 0” or describe an empty selection as a selected item.
+- Starting additions display their own descriptions instead of the ability of a card used only as an illustration.
+- Corrected temporary-condition eligibility checks when a mod defines tiers that do not increase in strength.
+- Added safeguards against repeated custom-effect and starting-addition bonuses when continuing a saved run. Missing or incompatible required integrations produce an explanation.
+
+Lore is unchanged in this update.
+
+
 ## 1.0.0 - Initial release
 
 The first public release of **Showstreak**, by **TraditionalDimension**.
