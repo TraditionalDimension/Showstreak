@@ -76,7 +76,6 @@ Mixed offers include consumables, vouchers and Bets. Consumables enter the inven
 - New descriptions and interface messages cover all **15 supported game locales**. Focused Lua and isolated Windows game checks cover transactions, saves, hover, localized layouts, boss objectives and editor workflows. These checks do not replace ordinary campaign balance playtesting, native-speaker review or macOS/Linux/Steam Deck acceptance.
 
 
-
 ## 1.2.0 — 2026-09-19
 
 ### Fixed
