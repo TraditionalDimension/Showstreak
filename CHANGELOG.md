@@ -1,5 +1,82 @@
 # Changelog
 
+## 1.3.0 — 2026-09-26
+
+### Shop and presentation
+
+- Added a **Shop catalog** tab to the mod configuration. Browse registered Showstreak shop items, including compatible additions from other mods, by type and inspect their effects, prices and source. Catalog inclusion does not guarantee availability in the current series.
+- Reworked item descriptions around the effect a player receives. Duration, limits and secondary information use quieter text; technical stacking details no longer dominate the main description. Shop tooltips remain attached to their cards instead of stealing the hover when their windows overlap them.
+- The next-run panel now separates the deck, stake, required Ante and readiness. The deck name and a separate deck-change button share one line. Changing the deck costs **2 stars, then 3, 4, and so on** during that preparation; Recast and the ordinary shop reroll remain separate actions.
+- Bets use **Easy / Normal / Hard** columns. A new-series catalog offers three Bets, one per category when available; Grand Bill adds two more choices. Additional offers have their own column pages. The acceptance limit remains **two**. Existing frozen offers are preserved, and external Bets without a declared difficulty appear under **Other**. Empty columns, long names and page changes now keep a stable layout.
+- Removed the duplicate Run conditions route. **Run Info** shows prepared effects, their sources, promised starting Jokers and boss-objective progress. Older saves without a complete source history are identified instead of inventing provenance.
+- Replaced the shop help list with a one-page illustrated guide and educational tooltips. Item result screens show the actual outcome, consumption and duration, then return to the originating shop tab. Failed chance rolls no longer promise a bonus that was not awarded.
+- Moved manual save-backup management into its own configuration tab. The normal menu prioritizes playing: Results uses the attention color and Main Menu is red. The automatic update notice remains, with a shorter explanation and optional technical details. Dark Star rewards have their own line.
+- Rebuilt Showman's speech around full voice sounds and the original game's spaced speaking cadence. Delayed frames no longer compress the remaining sounds into a burst, menu speech does not speed up with game speed, and the positive speaking bounce is gentler. The sign lights reverse direction smoothly at varied intervals; reduced motion keeps them still.
+
+### New preparation items
+
+All prices below are in ordinary stars, not Dark Stars. These are new-series entries; older series use the separate, explicit catalog update.
+
+| Item | Price | Effect |
+| --- | ---: | --- |
+| Reservation | 1 | Keep one unsold Prop or Trick through the next Showstreak shop reroll. |
+| Backlight | 3 | Remove the next run's temporary condition. |
+| Prop Master | 5 | Add one option to supported Showstreak packs, up to six, without increasing the number taken. |
+| Short Script / Edited Cut | 8 each | Each independently lowers required Ante by 1. |
+| Tight Rehearsal / Last Take | 5 each | Each lowers required Ante by 1 and discards by 1. |
+| Grand Bill | 5 | +1 required Ante, +1 held-item slot and two additional offered Bets. |
+| Lucky Curtain | 1 | A 1-in-8 chance to lower next-run required Ante by 1, down to the higher of Ante 6 and the series minimum. At or below that threshold, a successful roll awards 1–13 stars instead. |
+| Double Applause | 4 | Gain stars equal to the balance when used, up to 10. |
+| Box Office Return | 5 | Gain one star per owned Showstreak voucher in the current segment, up to 15. |
+| Reprise | 3 | Create the last eligible consumed item, or a random eligible item if it is unavailable. Reprise and item-generating items are excluded. |
+| Blue Skittles | 8 | Start the next run with Blueprint, lose one Joker slot and set that run to Blue Stake. |
+| Red Brain | 7 | Start the next run with Brainstorm, lose one discard and one hand size. |
+
+The five new Ante vouchers and Prop Master last until an accepted Intermission or the end of the series. Blue Skittles and Red Brain can each be used once per next run; grants respect Casting, bans, starting additions and capacity, and cannot be granted twice on resume. Blue Stake is set rather than permanently locked. Reprise remembers consumed chance items even when their roll failed, uses its own vacated slot when the inventory is full, and clears its history at Intermission. Star-return items cannot be wasted for a zero gain.
+
+### New conditions and Bets
+
+- **Commission:** Joker sales pay half their value, rounded down, or nothing. Recalculating a sale price does not repeatedly apply the penalty.
+- **Short Showcase:** no Booster purchases in the first visited Balatro shop of each Ante. Reloading that shop preserves the restriction; later visits are counted separately.
+- **Long Prologue, Late Bow and Third Bell** each add 1 required Ante; **Double Finale** adds 2. Built-in Easy and Easy Casting presets now use Ante bounds **2–10**, Standard variants **4–16**, and Hard variants **6–21**. Existing series retain their saved rules.
+- **Full Programme:** no Blind skips for the next run; win for +2 stars. **No Substitutions:** no Balatro shop rerolls for the next run; win for +2 stars. Showstreak shop rerolls remain available.
+- Added six next-run Bets: **Long Ovation** (+1 Ante, +3 stars on victory), **Long Monologue** (+1 Ante, +1 hand), **Second Rehearsal** (+1 Ante, +2 discards), **Wide Stage** (+2 Ante, +4 hand size), **High Stakes** (+2 Ante, victory stars equal to the starting stake level), and **On a Needle** (ordinary bosses become The Needle; victory gives three free purchases in the next Showstreak shop). Final boss selection is preserved by On a Needle; its free purchases exclude Bets, rerolls and internal pack selections.
+- Added five objective Bets. Their bonus is earned only if the task is completed **and the whole run is won**, once per run:
+
+| Bet | Assigned boss | Objective | Bonus |
+| --- | --- | --- | ---: |
+| Loose Ends | The Hook, one Ante before the target | No manual discards against this boss | +5 stars |
+| Breakthrough | The Wall, one Ante before the target | Win the boss in at most two hands | +5 stars |
+| Dry Run | The Water, one Ante before the target | No manual discards throughout that Ante | +5 stars |
+| Three at a Time | The Serpent, one Ante before the target | Play at most three cards per hand against this boss | +5 stars |
+| Fixed Blocking | Amber Acorn, at the target Ante | Do not manually reorder Jokers against this boss | +7 stars |
+
+Only one boss schedule may be accepted at a time, including On a Needle. Compatible ordinary Bets can use the other slot. Failing an objective loses its bonus, not the entire run. Chicot and Luchador remain usable, but do not waive the objective. A fixed boss cannot consume a paid reroll or a Boss Tag; the tag waits for an eligible unfixed choice. Declared bans and conflicting external schedules are respected.
+
+### New packs
+
+| Pack | Price | Choice |
+| --- | ---: | --- |
+| Patron Pack | 4 | 1 of 2 Showstreak vouchers |
+| Sponsor Pack | 5 | 1 of 3 Showstreak vouchers |
+| Producer Pack | 7 | 1 of 5 Showstreak vouchers |
+| Variety Pack | 3 | 1 of 4 mixed offers |
+| Grand Variety Pack | 6 | 2 of 5 mixed offers |
+
+Mixed offers include consumables, vouchers and Bets. Consumables enter the inventory; vouchers activate immediately; Bets are accepted immediately. Taking a card costs no additional stars. Each choice rechecks prerequisites, capacity and Bet conflicts; a blocked card does not consume a choice. Variety packs guarantee a paid-item option, and Grand Variety guarantees a compatible pair, rather than selling a selection consisting only of free Bets. Packs contain no duplicate IDs, nested packs or conditions. Mod-registered eligible items participate through the series' saved catalog.
+
+### Saves, compatibility and author tools
+
+- Added a previewable, backed-up update to **save schema 7**. Rules, frozen offers, progression and gameplay RNG are retained; missing older preparation history is not guessed. Compatible new catalog entries are still a separate opt-in between runs. Returning to an older mod version requires a matching backup; there is no reverse migration.
+- Existing saved definitions of the five objective Bets are raised to the current +5/+7-star minimum rewards, and Fixed Blocking uses Rough Gem artwork. Objective progress, available offers and already settled payouts are preserved; there is no retroactive reward payment. A matching current-run snapshot adopts the updated definitions on resume without replaying grants.
+- Added backup verification and restore controls, including a safety backup before restore, protection against stale source files, and recovery handling for interrupted operations. Ordinary loading does not create a new backup on every launch.
+- Added action-policy declarations for integrations, pack-pool capability 2 (`vouchers` and `mixed`), optional Bet difficulty metadata, explicit safe-copy metadata for Reprise, and declared starting-Joker occupancy for supported starting additions. The public API contract remains **1**, revision **1.1.0**; the Toolkit's 1.3.0 appendix documents the additive capabilities and compatibility limits.
+- Expanded the standalone **Lore Workshop** with independent RU/EN interface and story-text controls, Balatro colors, overlapping panel/image layers, reordering and reparenting, multi-selection, compound speech/caption objects, document/text Undo and Redo, persistent checkpoints, recovery drafts, resource replacement and shared preview/text validation. Exports remain story schema 2. Five runtime modules are shared with the mod.
+- **Player Lore remains In development.** Reading imported stories in-game still requires the explicit development flag; the authoring tools do not unlock a released story catalog. LÖVE 11.5 is a separate editor dependency.
+- New descriptions and interface messages cover all **15 supported game locales**. Focused Lua and isolated Windows game checks cover transactions, saves, hover, localized layouts, boss objectives and editor workflows. These checks do not replace ordinary campaign balance playtesting, native-speaker review or macOS/Linux/Steam Deck acceptance.
+
+
+
 ## 1.2.0 — 2026-09-19
 
 ### Fixed
