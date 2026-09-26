@@ -54,6 +54,6 @@ The English modding guide is also available as a separate PDF release asset. Mod
 
 See [LICENSE](LICENSE) for the author's terms. Use in Balatro is permitted. General redistribution, re-uploading and inclusion in other distributed packages are not permitted without separate author permission. Independently written integrations may be distributed separately without bundling Showstreak's files.
 
-The author has granted a [limited exception for Balatro Mod Manager](BMM_PERMISSION.md) to distribute and install unmodified official releases. This also covers the official 1.0.0 archive whose bundled license predates that exception.
+The author has granted a [limited exception for Balatro Mod Manager](BMM_PERMISSION.md) to distribute and install unmodified official releases.
 
 Balatro and third-party components remain the works of their respective creators. See [CREDITS.md](CREDITS.md).
