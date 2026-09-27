@@ -2,53 +2,59 @@
 
 **A win-streak campaign mode for Balatro, by TraditionalDimension.**
 
-The Showman has a challenge for you: keep winning across fresh Balatro runs. Prepare between runs, face new decks and rising stakes, and see how long your streak can last.
+The Showman has a challenge for you: keep winning across fresh Balatro runs. Prepare between runs, face changing decks and rising stakes, and see how long your streak can last.
 
-**[Download the player archive](https://github.com/TraditionalDimension/Showstreak/releases/latest/download/Showstreak-BMM.zip)** · [Nexus Mods](https://www.nexusmods.com/balatro/mods/947) · [All releases](https://github.com/TraditionalDimension/Showstreak/releases)
+**[Download the player ZIP](https://github.com/TraditionalDimension/Showstreak/releases/latest/download/Showstreak-BMM.zip)** · [Latest release](https://github.com/TraditionalDimension/Showstreak/releases/latest) · [Nexus Mods](https://www.nexusmods.com/balatro/mods/947)
 
-This repository hosts the download page, documentation and release notes. Install the attached **Showstreak-BMM.zip** from Releases. GitHub's automatically generated source archives contain this documentation repository and are not the playable mod.
+This repository contains documentation and release notes. Install **Showstreak-BMM.zip** from Releases. GitHub's automatic **Source code** archives contain this documentation repository, not the playable mod.
 
 ## What the mode adds
 
-- A campaign that continues across separate Balatro runs, with assigned decks and increasing stakes.
-- A between-run shop with preparations, vouchers, contracts and packs. Buy an item, then use it when you are ready to prepare the next run.
-- Masks from 12 condition families that change the rules between acts, plus an optional Intermission.
-- Easy, Standard and Hard presets, custom starting resources and bounds, and preset import/export.
-- Campaign records and profile Dark Stars, with campaign saves kept separate from your ordinary Balatro run.
-- Animated Showman portraits and contextual dialogue, 15 languages, separate voice/effect settings and reduced motion.
-- Public API v1 for authors who want to add compatible items, deck adapters or Showman reactions.
+- A campaign across separate Balatro runs, with assigned decks, rising stakes and conditions between acts.
+- A between-run shop with preparations, tricks, vouchers, Bets and packs. Hold consumables until you are ready to use them.
+- Easy, Standard and Hard presets, each with a **Casting** variant: choose Jokers to unlock for future appearances throughout the series.
+- Custom rules, starting resources and deck selection, with preset import and export.
+- Optional Card Sleeves, Partner and supported starting additions when their integrations are installed and enabled.
+- Campaign records, profile Dark Stars and saves separate from the ordinary Balatro run.
+- An animated Showman, dialogue in 15 languages, separate voice/effect settings and reduced motion.
+- A public integration API and a separate Toolkit for authors.
 
-Dark Stars are recorded in this version, but Lore purchases and story unlocks are not yet available.
+**Lore remains in development.** Dark Stars are retained, but the normal player Lore screen does not yet offer a story catalog. The Toolkit's Lore Workshop is an authoring tool.
 
-## Requirements
+## Current release: 1.3.0
+
+Browse the new **Shop catalog**, inspect preparations and boss objectives in **Run Info**, and use the illustrated shop guide. The update adds preparation items, Ante-changing vouchers and conditions, boss-objective Bets, voucher packs and mixed packs. Bets are grouped by difficulty; the next-run panel makes the deck, stake, required Ante and readiness easier to inspect.
+
+Save updates explain the changes and require confirmation after a verified backup. Adding new content to an existing series is a separate choice between runs. See the [full changelog](CHANGELOG.md) and the [player guides](docs/PLAYER_GUIDE_EN.md) for details.
+
+## Requirements and installation
 
 | Component | Requirement |
-|---|---|
+| --- | --- |
 | Balatro | Tested with 1.0.1o-FULL on Windows |
 | Steamodded / SMODS | 26.829.0 or newer |
 | Lovely | 0.9.0 or newer |
 
-Install [Steamodded](https://docs.smods.dev/Installation/Installing%20Steamodded%20windows/) and [Lovely](https://github.com/ethangreen-dev/lovely-injector) separately. Talisman is not required. The tested setup and remaining coverage limits are listed in [known issues](docs/KNOWN_ISSUES.md).
-
-## Installation
+Install [Steamodded](https://docs.smods.dev/Installation/Installing%20Steamodded%20windows/) and [Lovely](https://github.com/ethangreen-dev/lovely-injector) separately. The [compatibility notes](docs/KNOWN_ISSUES.md) describe the tested scope.
 
 1. Close Balatro completely.
-2. Download **Showstreak-BMM.zip** from [Releases](https://github.com/TraditionalDimension/Showstreak/releases/latest) or obtain the mod on [Nexus Mods](https://www.nexusmods.com/balatro/mods/947).
+2. Download **Showstreak-BMM.zip** from [Releases](https://github.com/TraditionalDimension/Showstreak/releases/latest).
 3. Extract its **Showstreak** folder into `%AppData%\Balatro\Mods`.
-4. Check that the path is `%AppData%\Balatro\Mods\Showstreak\main.lua`, without a second nested Showstreak folder.
-5. Restart Balatro. In the main menu, use **To Show** on the Showstreak sign above the profile button.
+4. Check that `%AppData%\Balatro\Mods\Showstreak\main.lua` exists, without a second nested Showstreak folder.
+5. Restart Balatro and choose **To Show** on the Showstreak sign above Profile.
 
-For an update, close the game and back up the three Showstreak profile files together: `showstreak-a.jkr`, `showstreak-b.jkr` and `showstreak-run.jkr`. Keep your shared settings and personal presets too. Replace only the installed Showstreak folder; keep backups outside Mods so they are not loaded as a second copy. Detailed paths and instructions are in the player guides.
+When updating, back up your profile's `showstreak-a.jkr`, `showstreak-b.jkr` and `showstreak-run.jkr` together while the game is closed. Preserve shared settings and personal presets too. Replace only the installed Showstreak folder, keeping backups outside Mods. The guides explain the full paths and the difference between updating a save and adding new catalog content.
 
 ## Guides and support
 
-- Player guides: [English](docs/PLAYER_GUIDE_EN.md) · [Русский](docs/PLAYER_GUIDE_RU.md).
-- Modding guides: [English](docs/MODDING_GUIDE_EN.md) · [Русский](docs/MODDING_GUIDE_RU.md).
-- [API reference](docs/API.md) and [local tutorial integration](docs/examples/integration/README.md).
-- [Changelog](CHANGELOG.md), [known issues](docs/KNOWN_ISSUES.md) and [credits](CREDITS.md).
-- Report a problem through [GitHub Issues](https://github.com/TraditionalDimension/Showstreak/issues) or the [Nexus Mods page](https://www.nexusmods.com/balatro/mods/947). Include your game, loader and mod versions, other installed mods, steps to reproduce, and the error text or relevant log.
+- **Players:** [English guide](docs/PLAYER_GUIDE_EN.md) · [Русская инструкция](docs/PLAYER_GUIDE_RU.md).
+- **Authors:** [Toolkit overview](docs/TOOLKIT.md) · [Download Toolkit 1.3.0](https://github.com/TraditionalDimension/Showstreak/releases/download/1.3.0/Showstreak-Toolkit-1.3.0.zip).
+- **Integrations:** [English modding guide](docs/MODDING_GUIDE_EN.md) · [Русское руководство](docs/MODDING_GUIDE_RU.md) · [API reference](docs/API.md) · [Tutorial integration](docs/examples/integration/README.md).
+- **Project:** [Changelog](CHANGELOG.md) · [Known limitations](docs/KNOWN_ISSUES.md) · [Artwork and sound layout](docs/ASSET_LAYOUT.md) · [Credits](CREDITS.md).
 
-The English modding guide is also available as a separate PDF release asset. Modding guides, the API reference and tutorial integration files are kept out of the player ZIP; player instructions remain included.
+The Toolkit contains the author documentation, integration example and standalone Lore Workshop. It is not required to play. The public API remains **contract 1, revision 1.1.0**; the mod and Toolkit release number is 1.3.0.
+
+Report reproducible problems through [GitHub Issues](https://github.com/TraditionalDimension/Showstreak/issues). Include Showstreak, Balatro, Lovely and Steamodded versions, other installed mods, steps to reproduce, and the error text or relevant log.
 
 ## Permissions
 

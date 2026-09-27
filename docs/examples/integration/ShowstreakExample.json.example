@@ -1,15 +1,11 @@
 {
   "id": "ShowstreakExample",
-  "name": "Showstreak Integration Example",
-  "author": [
-    "TraditionalDimension"
-  ],
-  "description": "Optional API example: one held prop, one series voucher and a contextual Showman reaction.",
-  "prefix": "sse",
+  "name": "Showstreak API Example",
+  "author": ["TraditionalDimension"],
+  "description": "Local learning example for Showstreak API v1, revision 1.1.0.",
+  "prefix": "ssex",
   "main_file": "main.lua",
-  "version": "1.0.0",
-  "priority": 10000011,
-  "dependencies": [
-    "Showstreak (>=1.0.0)"
-  ]
+  "version": "1.1.0",
+  "priority": 0,
+  "dependencies": ["Showstreak (>=1.1.0)"]
 }

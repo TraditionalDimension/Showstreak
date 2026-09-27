@@ -1,107 +1,82 @@
-# Showstreak 1.0.0 artwork and sound layout
+# Showstreak 1.3.0 — artwork and sound layout
 
-This describes Showstreak 1.0.0. Sources and attribution are listed
-in [CREDITS.md](../CREDITS.md); conditions for using Showstreak's files are in
-[LICENSE](../LICENSE). This layout reference does not grant permission to republish
-the artwork. See KNOWN_ISSUES.md for the tested release scope.
+This reference describes the **1.3.0 player distribution**, whose asset files are attached to the [GitHub release](https://github.com/TraditionalDimension/Showstreak/releases/tag/1.3.0). Paths below are relative to the installed Showstreak folder; this documentation repository does not contain the runtime assets.
 
-## Showman expressions
+Sources and attribution are listed in [CREDITS](../CREDITS.md), and permissions in [LICENSE](../LICENSE). This reference does not grant permission to republish the artwork. See [known limitations](KNOWN_ISSUES.md) for the tested scope.
 
-Current runtime file: `assets/1x/emotions.png`.
+## Showman atlas
 
-- PNG with real transparency, **568 × 95 px**.
-- One horizontal row of **8 cells**, **71 × 95 px** each.
-- `assets/2x/emotions.png`: **1136 × 190 px**, exact nearest-neighbour 2× copy.
-- Keep the head, hat and shoulders aligned between cells. Each cell is a complete
-  character image; the runtime does not overlay eyes or a mouth.
-- The game displays the same 3.08 × 4.18 canvas regardless of expression.
+The active portrait files are `assets/1x/emotions.png` and `assets/2x/emotions.png`, registered as `sstreak_faces`.
 
-| Cell, left to right | Code index | Expression |
-|---|---:|---|
-| 1 | 0 | Idle, eyes open, mouth closed |
-| 2 | 1 | Half blink |
-| 3 | 2 | Eyes closed |
-| 4 | 3 | Temporary gaze variant |
-| 5 | 4 | Temporary gaze variant |
-| 6 | 5 | Brief event expression |
-| 7 | 6 | Brief event expression; transition out of frame 7 |
-| 8 | 7 | Brief event expression; always exits through frame 6 |
+| Property | 1× | 2× |
+| --- | --- | --- |
+| Full PNG size | 568 × 665 px | 1136 × 1330 px |
+| Cell size | 71 × 95 px | 142 × 190 px |
+| Grid width | 8 cells | 8 cells |
+| Populated rows | 4, containing 32 authored drawings | Matching drawings |
+| Remaining rows | 3 transparent rows | Matching transparent rows |
 
-The shared controller is `scripts/showman/animation.lua`. It uses these eight
-existing frames and targets frame 0 for **65% of ordinary visible time**; the
-proportion is a pacing target over time, not a quota for every short interval.
-Blinks follow `0 → 1 → 2 → 1 → 0`. Frames 3 and 4 are temporary looks, while
-frames 5, 6 and 7 are brief reactions. Every gesture returns to idle, directly
-or through a blink. A transition away from frame 7 always displays frame 6 first,
-including when another event arrives.
+The image height includes unused transparent rows; they are not additional expression frames. Each populated cell is a complete character drawing. The current renderer does not build expressions by compositing eyes and mouths over a base portrait.
 
-Speech and expression duration are independent: after a brief reaction, Showman
-returns to idle even while its text remains visible. Cosmetic timing uses its own
-random generator and does not consume gameplay RNG. Reduced motion keeps a quiet
-frame-0 idle with brief event reactions, without recurring blinks or looks; the
-`7 → 6` exit rule still applies.
+The mapping is defined in `scripts/showman/animation.lua`. Frame indices are zero-based, proceeding left to right and then down:
 
-Current figure bounds within a cell are approximately x=17..53, y=18..77.
-These bounds are a drawing reference, not an engine crop: all 71 × 95 pixels
-are rendered. Keep the overall visible size comparable if enlarging details.
+| Frames | Use |
+| --- | --- |
+| 0–4 | Neutral, blink and gaze drawings |
+| 5–7 | Pleased, curious and concerned |
+| 8, 12, 24 | Joyful expression and its matching speaking poses |
+| 9–10 | Playful variants |
+| 11, 26 | Surprised variants |
+| 13–14 | Awkward and embarrassed |
+| 15, 30 | Relaxed variants |
+| 16–20 | Thoughtful, confident, skeptical, annoyed and crying |
+| 21, 31 | Calm variants |
+| 22–23 | Uncertain and serious |
+| 25, 27 | Reserved drawings without a matching closed-mouth base |
+| 28–29 | Angry and smirking |
 
-These eight existing frames are the selected scope for the first release.
-Additional mouth poses or a larger expression atlas are not required by this
-layout. Replacing the two PNGs requires a full game restart; a changed atlas must
-be reviewed in the actual game, including its small portrait sizes.
+Only the matching joyful set changes mouth frames during speech. Other expressions keep their authored drawings; speech does not swap unrelated eyes, winks or tears. Neutral blinking follows `0 → 1 → 2 → 1 → 0`. Leaving frame 7 passes through frame 6.
 
-## Showman voice and feedback
+Animation has its own cosmetic randomness and does not consume gameplay RNG. Reduced motion suppresses recurring idle movement and speaking-mouth changes while retaining brief reactions. The Showman's presentation, speech planning and sign lights are separate systems; the 1.3.0 menu speech cadence does not speed up with game speed.
 
-`scripts/showman/audio.lua` reads `resources/sounds/voice1.ogg`, `voice4.ogg`,
-`voice7.ogg` and `voice10.ogg` from the player's installed Balatro during sound
-registration. It makes mono voice variants in memory using 0.85 playback-speed
-resampling, a 2400 Hz low-pass filter, soft saturation and short fades. The WAV
-data is passed directly to the sound manager as FileData; no voice file is written
-to disk or included in the player archive. If preparation fails, the matching
-unmodified native voice is used.
+When preparing replacement art, preserve the cell grid, transparency and alignment of the head, hat and shoulders. Check both resolutions and small in-game portrait sizes after a full restart. Do not treat the old one-row, eight-frame specification as the current layout.
 
-Only `assets/sounds/purchase.wav` and `assets/sounds/ready.wav` are shipped. They
-are synthesized Showstreak feedback cues. Showman voice registration and the
-feedback cues leave the global Jimbo voice unchanged and use the normal game
-sound settings together with Showstreak's voice/effect preferences.
+## Voice and feedback sounds
 
-The historical development importer created processed voice files on disk. That
-workflow is not part of the player distribution and must not be used to rebuild
-its runtime assets.
+`scripts/showman/audio.lua` reads these sounds from the player's installed Balatro:
 
-## Currency stars
+`voice1.ogg`, `voice2.ogg`, `voice4.ogg`, `voice5.ogg`, `voice7.ogg`, `voice9.ogg`, `voice10.ogg`.
 
-| Artwork | 1× PNG | 2× PNG | Runtime atlas |
-|---|---|---|---|
-| Gold Star | `assets/1x/star.png`, 24 × 24 px | `assets/2x/star.png`, 48 × 48 px | `sstreak_star` |
-| Dark Star | `assets/1x/dark-star.png`, 24 × 24 px | `assets/2x/dark-star.png`, 48 × 48 px | `sstreak_dark_star` |
+The mod prepares complete voice samples in memory, using resampling, filtering, saturation, fades and gain adjustment. The sound manager receives in-memory data. Original or processed Balatro voice files are not included in the player archive, and the runtime does not write generated voice files into the mod folder. If preparation fails, the matching native voice is used.
 
-Each PNG contains one complete transparent sprite. The Dark Star uses the author's
-prepared artwork at both texture scales and represents the current profile's
-persistent balance on the movable menu panel and the Lore screen. Gold Stars
-remain the currency of the active series. Keep both resolutions aligned and use
-nearest-neighbour scaling for pixel art. Replacing artwork requires a full restart.
+Version 1.3.0 schedules complete samples with gaps between them. Delayed frames do not compress pending sounds into a burst. Showman's voice has its own preference and does not replace Jimbo's global voice.
 
-## Other active atlases
+`assets/sounds/purchase.wav` and `assets/sounds/ready.wav` are synthesized Showstreak feedback cues. They remain registered; current purchase and item reactions also use native game sound keys. Voice and effect preferences are separate.
 
-| Artwork | 1× PNG | 2× PNG | Cell size at 1× |
-|---|---|---|---|
-| Sign | `assets/1x/sign.png` | `assets/2x/sign.png` | 192 × 44 px |
-| Lamp states | `assets/1x/lamp-state-0.png` through `lamp-state-2.png` | Matching files in `assets/2x` | 9 × 9 px |
-| Mod icon | `assets/1x/icon.png` | `assets/2x/icon.png` | 34 × 34 px |
+## Currency, sign and interface atlases
 
-The 2× assets have twice the corresponding width and height. The sign uses child
-sprites for its lamps; reduced motion keeps them steady. The 34 px game icon is
-not a 256 px distribution-platform icon.
+| Artwork | File in `assets/1x` | 1× cell size | Runtime atlas |
+| --- | --- | --- | --- |
+| Ordinary star | `star.png` | 24 × 24 px | `sstreak_star` |
+| Dark Star | `dark-star.png` | 24 × 24 px | `sstreak_dark_star` |
+| Sign | `sign.png` | 192 × 44 px | `sstreak_sign` |
+| Lamp states | `lamp-state-0.png` through `lamp-state-2.png` | 9 × 9 px | `sstreak_lamp_0` through `sstreak_lamp_2` |
+| Mod icon | `icon.png` | 34 × 34 px | `sstreak_modicon` |
 
-## Legacy files and development sources
+Matching files in `assets/2x` have twice the width and height. Keep the two texture scales aligned. The 34 px game icon is separate from any distribution-platform artwork.
 
-`host.png` and `showman-aura.png` at both scales, together with
-`assets/shaders/host_face.fs` and `assets/shaders/marquee.fs`, are retained legacy
-assets and are not registered by the current visual module. The active Showman
-does not depend on them and does not composite eyes or mouths using those shaders.
+Ordinary stars belong to the current series shop. Dark Stars represent persistent profile progress. The sign's lamps are separate sprites; their motion reverses direction at varied intervals in 1.3.0, and reduced motion keeps them still.
 
-Development importers and image-generation masters are absent from the player
-archive. Do not run an old importer over newer hand-edited assets. The runtime
-loads its image files from the mod's own `assets/1x` and `assets/2x` directories;
-it does not need a design workspace, image-generation tool or online service.
+Item cards reference installed Balatro/Steamodded artwork; original game card atlases are not bundled. Showstreak item illustrations avoid Legendary Joker and The Soul artwork, with Matador as the safe fallback. Actual Jokers presented through Casting retain their own artwork and sources.
+
+## Lore typography and author tools
+
+Comic rendering uses DejaVu Sans. The player distribution includes `assets/lore/DejaVuSans.ttf` and its copyright and permission notice, `assets/lore/LICENSE-DejaVu.txt`. The separate Lore Workshop also uses DejaVu Sans Bold for its interface.
+
+The font has its own license. The normal player Lore screen remains in development; font and reader support do not imply that a player story catalog has been released. See the [Toolkit overview](TOOLKIT.md) for authoring tools.
+
+## Legacy files
+
+`host.png` and `showman-aura.png` at both scales, plus `assets/shaders/host_face.fs` and `assets/shaders/marquee.fs`, are retained legacy resources. The current portrait/sign renderer does not use them.
+
+Development importers and image-generation masters are not required at runtime. Do not run an old importer over the author's later drawings. The installed mod loads its own assets; it does not need the development workspace or an online image service.

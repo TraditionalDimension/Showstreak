@@ -1,513 +1,775 @@
-# Showstreak: A Guide for Integration Authors
+# Building a Showstreak integration
 
-**Showstreak 1.0.0 · API v1 · TraditionalDimension**
+Use this guide with [API.md](API.md), the [1.3.0 API details](API_130.md) and [release compatibility notes](RELEASE_130.md). The downloadable PDF remains a historical API 1.1.0 baseline; this Markdown guide includes the current 1.3.0 behavior.
 
-A practical guide to building your own provider mod: items, decks, localization, Showman dialogue, saves, and releases. The contracts have been checked against the 1.0.0 implementation. The companion [API reference](API.md) and [tutorial example](examples/integration/README.md) are available in the source/developer materials, distributed separately from the lean player ZIP. You can follow the examples in this guide without those companion files.
+**English modding guide · Showstreak 1.3.0 · API contract 1, revision 1.1.0**  
+TraditionalDimension
 
-This guide covers integration through the API. Distribute your own mod separately and declare Showstreak as a dependency. Do not include Showstreak runtime files, original artwork, audio, or player saves in your integration archive. The [LICENSE](../LICENSE) governs permitted use; providing an API does not grant permission to redistribute the entire mod or its resources.
+For downloads, the standalone comic editor and its project workflow, start with
+[Toolkit and Lore Workshop](TOOLKIT.md). Normal player Lore is still In development.
 
-## 1. What You Can Extend
+### What changed for integration authors in 1.3.0
 
-The API has three registration functions: `register_item`, `register_deck`, and `register_showman_reaction`. They add item data to Showstreak's catalog, describe the resources of an existing deck, and add contextual dialogue, respectively. `showman_event` reports your own public event. For diagnostics, use `provider_manifest`, `mod_report`, and `environment_report`.
+- Query `get_api_info().capabilities`, because the API revision remains 1.1.0.
+  `pack_pools=2` adds supported voucher/mixed packs; `action_policy_sources=1`
+  exposes declarations for restrictions relevant to Bets and assigned bosses.
+- Give an external Bet its authored `bet_tier`, or let it appear under Other.
+  Explicitly opt a safe consumable into Reprise with `copy_safe=true`; declare
+  item-generating effects with `generates_items=true` to exclude them.
+- Declare `starting_joker_count` on a starting category when its maximum is
+  known. Missing metadata is unknown and can block a promised starting Joker.
+- Save schema 7 is separate from API revision 1.1.0 and story schema 2. Required
+  save migration and optional catalog updates are separate player decisions.
+  Neither authorizes a provider to rewrite the saved campaign directly.
 
-| Task | Supported mechanism |
-|---|---|
-| Prepare an item for the next run | `kind='prop'` with one supported effect |
-| Immediately change a selection or condition | `kind='trick'` |
-| Add a voucher that remains active between runs | `kind='voucher'` |
-| Offer a contract with a victory reward | `kind='contract'` |
-| Offer a selection of items in a pack | `kind='pack'` |
-| Add your own deck | Register a normal Back first, then call `register_deck` |
-| React to a purchase or your own event | `register_showman_reaction` |
+If an integration requires these additions, declare `Showstreak (>=1.3.0)`
+and check the relevant capability. The complete teaching example below uses
+the older, still-supported baseline with a minimum dependency of 1.1.0.
 
-The API does not register new effect types, arbitrary gameplay callbacks, condition/mask families, new shops, custom pack pools, paid contracts, save migrations, or settings. Rule presets are imported as JSON through the menu; there is no `register_preset` function. Adding an invented field does not implement a new behavior.
+## 1. Choose the right extension
 
-Some Lua functions exposed on `Showstreak` serve the mod's own implementation. A function's presence in that table does not make it a stable public contract. Use the entry points listed here for integrations; do not modify internal `core`, `store`, UI tables, or the saved catalog in production gameplay code. In this guide, a **campaign** is a Showstreak series spanning multiple individual Balatro **runs**.
+Showstreak connects runs into a series with its own shop, rules, Casting choices,
+conditions and Showman. An integration describes content for those systems and,
+when needed, supplies a versioned run-start callback. It does not replace the
+native Balatro mod that implements your deck, Sleeve, Partner or other content.
 
-<!-- pagebreak -->
+Start with the smallest public extension that expresses your idea:
 
-## 2. Load Order and Identifiers
+| Your idea | Use |
+| --- | --- |
+| An extra hand for the next run | A prop with built-in `hands` |
+| Extra starting cash until Intermission | A voucher with `money` |
+| A harder next run for a victory reward | A contract |
+| A reveal or named next deck | A supported trick |
+| A choice of held items | A pack from `props` or `tricks` |
+| Voucher or mixed rewards | Version-2 `vouchers` / `mixed` pack |
+| An accumulating Act restriction | A condition/mask |
+| Distinct run-start behavior | A registered custom effect |
+| A new pre-run choice category | A generic starting addon |
+| A content restriction | An additive ban source |
+| A restriction on actions or boss schedules | An action-policy source |
+| A contextual line and expression | A Showman reaction |
 
-Register content once, while your mod is loading: **after Showstreak and before `SMODS.booted`**. After boot, the registration functions return `nil, 'registration_closed'`. Do not register content in update handlers, button callbacks, purchase events, or at the start of every run.
+Use a built-in effect for an ordinary resource change. Its existing preview,
+bounds, lifetime and save behavior are already integrated. A custom effect is
+useful when your behavior cannot be represented by that fixed list, not simply
+as another way to add two dollars.
 
-Showstreak uses priority `10000010`; Steamodded loads lower priorities first. A separate provider can use `10000011` and depend on version 1.0.0. Showstreak itself requires Steamodded 26.829.0+ and Lovely 0.9+; do not bundle these loaders with your integration.
+This guide follows the [ShowstreakExample source](examples/integration/README.md). It has no
+image files: the example references resources in the installed game. It adds
+gameplay content and changes the available series catalog. Use a separate test
+profile. For every accepted field and numeric range, keep [API.md](API.md) open.
 
-For a local tutorial installation, create `Mods/ShowstreakExample/` and place this manifest inside it:
+The example is supplied for learning and local testing under the kit's existing
+terms. Your independently written integration should be a separate dependency
+mod. Chapter 18 explains the distribution boundary.
+
+<!-- page-break -->
+
+## 2. Install the local example
+
+Keep Showstreak 1.3.0 installed normally. The repository deliberately stores
+the example as inert `.example` files. Create a separate `Mods/ShowstreakExample`
+folder, copy [the manifest](examples/integration/ShowstreakExample.json.example)
+and [the Lua source](examples/integration/main.lua.example) there, and remove
+only their final `.example` suffixes. The result must be:
+
+```text
+Mods/
+  Showstreak/
+    Showstreak.json
+    main.lua
+  ShowstreakExample/
+    ShowstreakExample.json
+    main.lua
+```
+
+Do not put the example inside the Showstreak runtime folder. Do not copy the
+entire Toolkit to Mods: its guides are not a second runtime installation.
+Restart the game so SMODS discovers the new manifest and declarations.
+
+The manifest has ID `ShowstreakExample`, prefix `ssex`, priority `0`, and a
+dependency on `Showstreak (>=1.1.0)`. The dependency prevents this example from
+pretending it can run against an older API revision. The early priority exercises
+the initialization hook rather than depending on manual load-order adjustments.
+
+On a fresh test series, look for the example content in the catalog and setup.
+The Rehearsal Deck has two extra starting dollars. Opening Ticket is a new
+starting category; enable it explicitly in custom rules to see its five choices.
+It is off in built-in modes. Showstreak's shop is seeded, so an example item is
+not guaranteed to appear in the first shop. The corresponding ID and registration
+can be inspected through the API independently of a random offer.
+
+The sample ban source denies the native Credit Card Joker within Showstreak.
+That behavior is intentional and useful when testing deny union. Remove the
+example folder after local evaluation if you do not want its content in future
+series. Existing test series that require it will correctly report a missing
+provider; start a new ordinary series instead of editing the saved catalog.
+
+<!-- page-break -->
+
+## 3. Create your own manifest and hook
+
+Choose a permanent mod ID before publishing. Showstreak uses that ID for provider
+ownership, namespaced content and compatibility. A display name can change
+without renaming those identifiers.
 
 ```json
 {
-  "id": "ShowstreakExample",
-  "name": "Showstreak Integration Example",
+  "id": "MyStageMod",
+  "name": "My Stage Mod",
   "author": ["Your name"],
-  "description": "A local Showstreak API tutorial.",
-  "prefix": "sse",
+  "prefix": "myst",
   "main_file": "main.lua",
   "version": "1.0.0",
-  "priority": 10000011,
-  "dependencies": ["Showstreak (>=1.0.0)"]
+  "priority": 0,
+  "dependencies": ["Showstreak (>=1.1.0)"]
 }
 ```
 
-Name the file `ShowstreakExample.json`. The `main.lua` that goes beside it is shown in the next section. Ready-to-use local versions of both files are also in `examples/integration` in the source/developer materials; remove their `.example` suffixes for the tutorial installation. Inside the original Showstreak folder, those example files remain inactive.
-
-**Keep these three naming systems separate:**
-
-| Name | Example | Purpose |
-|---|---|---|
-| Mod ID | `ShowstreakExample` | Provider identity, dependency, and the start of custom event names |
-| Steamodded prefix | `sse` | Ordinary SMODS centers/atlases, such as `b_sse_reserve` |
-| Showstreak namespace | `showstreakexample_` | Item, family, and reaction IDs |
-
-The namespace is derived from the provider ID: convert it to lowercase, replace characters other than letters, digits, and underscores with `_`, then append `_`. Full item and reaction IDs must match `^[a-z][a-z0-9_]*$`. `Other-Mod` and `Other_Mod` produce the same prefix; item namespace collisions are rejected. Choose your own stable ID for a published mod.
-
-You can usually omit `provider`: the registration function uses `SMODS.current_mod.id`. Set an explicit provider only when you deliberately need to register on behalf of another available mod. Do not claim another author's namespace.
-
-<!-- pagebreak -->
-
-## 3. A Working Minimal main.lua
-
-This version uses native artwork, so it needs no additional PNGs or sounds. Put it in the separate tutorial mod from section 2. It is an alternative minimal file; the ready-made example on disk also includes a voucher.
+Create native SMODS objects before assigning your hook. A Back adapter must refer
+to an already registered `SMODS.Back`; an item using your atlas needs that atlas
+registered first. Then assign `showstreak_init` on your own mod object:
 
 ```lua
-local S = assert(Showstreak, 'Showstreak must load first')
-assert(S.api and S.api.version == 1, 'Expected API v1')
+local mod = assert(SMODS.current_mod)
+mod.showstreak_init = function(api)
+    assert(api.version == 1, 'Unsupported Showstreak API')
+    assert(api.get_api_info().capabilities.conditions == 1)
+    -- Use api.register_item, api.register_condition, etc. here.
+end
+if Showstreak and Showstreak.api and Showstreak.api.ready then
+    assert(Showstreak.initialize_integration(mod.id))
+end
+```
 
-local id, reason = S.register_item{
-    id = 'showstreakexample_spare_hand',
+When you load earlier, Showstreak discovers this hook at its own initialization.
+When you load later, the final conditional invokes the same once-only host path.
+Do not call `mod.showstreak_init()` yourself or register the same content outside
+the hook as well. Registration closes at `SMODS.booted`.
+
+Use the facade's dot calls. It supplies your provider without changing the SMODS
+current mod globally. The SDK uses this same pattern and is checked in both load
+orders. A thrown initialization error stops loading with its provider diagnostic;
+fix the faulty definition and restart rather than retrying a half-finished hook.
+
+<!-- page-break -->
+
+## 4. Read errors and protect stable identifiers
+
+`MyStageMod` owns IDs beginning `mystagemod_`. Its SMODS prefix `myst` is separate:
+a native Back might be `b_myst_reserve`, while a Showstreak prop is
+`mystagemod_spare_hand`. Lowercase the provider ID, replace punctuation with
+underscores, then append `_`. Do not claim another mod's namespace.
+
+Every registration returns its ID/key on success. On failure it returns nil, a
+short code and structured detail. Use the short code in tools; show the message
+when a human needs to repair the definition.
+
+```lua
+local result, code, detail = api.register_item(definition)
+if not result then
+    error(tostring(code) .. ': '
+        .. tostring(detail and detail.message))
+end
+```
+
+That block illustrates error handling; `definition` must be a complete real item.
+The kit's full main.lua has a shared registration helper with the same behavior.
+`api.get_api_error()` returns a copy of the most recent structured diagnostic.
+It includes operation, code, field, provider and ID where known. A successful
+registration clears it. Older two-return-value integrations still work.
+
+Do not mutate `Showstreak.content`, `Showstreak.api` registries or a campaign's
+catalog to bypass an error. Data definitions must be serializable: finite
+numbers, strings, booleans and plain acyclic tables. A function belongs only in
+a documented callback field. A sparse tier array is not a compact list.
+
+Keep published IDs stable even when improving names or translations. Do not
+reuse an old ID for an unrelated effect. `content_version` records item/condition
+metadata; it is not executable migration code. Custom effect/addon versions
+have stricter restore implications, explained in chapter 15.
+
+Useful early checks are `get_api_info().registration_open`, capability membership
+and whether the native center or atlas exists before your registration refers
+to it. These checks make a loading error actionable without making players read
+internal field names in normal item descriptions.
+
+<!-- page-break -->
+
+## 5. Build a prop and its description
+
+A prop is bought or taken into held inventory. The player then presses Use to
+prepare its effect for the next run. Buying it does not immediately change the
+current native run. This distinction should appear in your description.
+
+The following is a complete registration inside the SDK provider hook. Change
+the provider-derived prefix when writing your own integration.
+
+<!-- sdk-check: hook -->
+```lua
+assert(api.register_item {
+    id = 'showstreakexample_guide_hand',
     kind = 'prop', effect = 'hands', value = 1,
     price = 2, art = 'j_joker', content_version = 1,
     loc_txt = {
         ['en-us'] = {
             name = 'Spare Hand',
             text = {'{C:blue}+#1#{} hand each round',
-                    'during the next run'},
+                'during the {C:attention}next run{}'},
         },
         ru = {
             name = 'Запасная рука',
             text = {'{C:blue}+#1#{} рука каждый раунд',
-                    'в следующем забеге'},
+                'в {C:attention}следующем забеге{}'},
         },
     },
-}
-assert(id, tostring(reason))
-
-local reaction, why = S.register_showman_reaction{
-    id = 'showstreakexample_spare_hand_bought',
-    event = 'buy',
-    match = {item_id = id, source = 'buy'},
-    priority = 60,
-    text = {
-        ['en-us'] = {'An extra hand. A useful precaution.'},
-        ru = {'Лишняя рука. Полезная предосторожность.'},
-    },
-}
-assert(reaction, tostring(why))
-```
-
-After fully restarting the game, the provider should appear as integrated in the mod report. **Create a new campaign:** an existing campaign retains its previous catalog. Offers are random, so an item being absent from the first shop is not, by itself, evidence of a problem.
-
-The expected sequence is to buy the item for 2 Stars, find it in your held inventory, activate it with Use, and start the next run. Buying it alone does not grant an extra hand. After Use, the bonus applies in every round of the next run; resuming a save must not apply it a second time.
-
-If registration fails, stop loading the tutorial mod with a clear diagnostic. A finished integration may handle the failure differently, but it must not silently treat a failed registration as successful.
-
-<!-- pagebreak -->
-
-## 4. The Item Contract
-
-`Showstreak.register_item(def)` returns the ID on success, or `nil, reason` on failure. The definition is copied. It must contain plain data: strings, booleans, finite numbers, and tables without metatables or cycles. Functions, userdata, NaN, and infinities are rejected even inside an additional nested table.
-
-| Field | Requirement |
-|---|---|
-| `id` | Unique ID in the provider's namespace |
-| `provider` | Optional ID; defaults to the current mod |
-| `kind`, `effect`, `value` | A required, compatible combination from section 5 |
-| `price` | Integer 0..999 Stars; contracts require 0 |
-| `art` | A known center key, such as `j_joker` or `v_seed_money` |
-| `atlas`, `pos` | Alternative to art: a known atlas and integer x/y coordinates in 0..9999 |
-| `loc_txt` | Steamodded description; preferably complete EN and RU text |
-| `weight` | Optional integer 1..100; defaults to 1 |
-| `family` | Optional group ID in the same namespace |
-| `family_weight` | Integer 1..100; identical for all family members; defaults to 1 |
-| `requires` | Voucher only; ID of an already registered parent voucher |
-| `reward` | Required for a contract, 0..999; also allowed for trick/ante |
-| `max_once` | Optional boolean, only for trick/ante |
-| `deck` | Only for set_deck; an existing supported deck |
-| `pool`, `choose` | Pack only; pool props/tricks, choose from 1 to value |
-| `content_version` | Integer 1..999999; defaults to 1; metadata |
-
-If both `atlas` and `art` are supplied, the explicit atlas is used. Coordinates refer to cells, not pixels. Registration does not guarantee that an incorrectly sized PNG will be detected.
-
-The API assigns `activation`, `lifetime`, and `visual` based on kind. Do not set these fields as a way to change an item's semantics. Item registration does not apply a strict schema to every unknown key: a plain extra field may be copied, but it does not create any new behavior.
-
-If native center registration fails, the item is not added to the catalog and the function returns `center`; details are available in `Showstreak.api.last_error`. Fix the original definition instead of manually appending entries to `Showstreak.content.items` or `order`.
-
-<!-- pagebreak -->
-
-## 5. Effects and Lifetimes
-
-There are nine resource effects: `money`, `hands`, `discards`, `hand_size`, `joker_slots`, `consumable_slots`, `deck_size`, `shop_slots`, and `booster_slots`. Their values are integers from -999 to 999. The value is a change to the resource, not its final absolute amount.
-
-The `blind`, `boss`, and `prices` effects accept finite fractional changes. `0.15` means +15%; `-0.20` means -20%. Contributions to the same modifier add together: +0.15 and -0.05 produce +0.10. The campaign's score factor is applied separately. The validator does not judge balance or promise sensible results for extreme percentages.
-
-| Kind | Effects | Behavior |
-|---|---|---|
-| `prop` | Resources, blind/boss/prices | Buy/Take adds it to held inventory; Use prepares its effect for the next run |
-| `contract` | Resources, blind/boss/prices | Accepting it for free immediately prepares the effect; victory pays reward |
-| `voucher` | All of the above, plus reward, held_slots, reveal_act, free_reroll | Buying activates it until an accepted Intermission or the end of the campaign |
-| `trick` | reveal, reveal_all, deck, set_deck, stake, ante, remask, remove_condition | Buy/Take adds it to held inventory; Use performs the action immediately |
-| `pack` | Only pack | Buying opens a selection; chosen items enter held inventory |
-
-A fixed `value=1` is required for reveal, reveal_all, reveal_act, deck, set_deck, remask, and remove_condition. Stake requires `-1`. Ante requires a nonzero integer from -15 to 15. The voucher effects reward, held_slots, and free_reroll require a positive integer up to 999. For packs, value is 1..5 and choose cannot exceed value.
-
-`deck` selects another deck according to the rules; `set_deck` assigns a specific one. The latter is eligible only if its target deck is enabled for the campaign and differs from the deck already selected for the next run. It preserves that run's seed and does not draw an additional deck from the deck bag.
-
-A contract must be free to accept. Its `reward` means Stars awarded for victory, not items, dollars, or Dark Stars. For a voucher with `effect='reward'`, set the bonus in value, not in the reward field.
-
-Accepting Intermission clears vouchers, held items, accumulated conditions, and preparation; it preserves the overall win streak, Dark Stars, frozen rules, and catalog. Describing a voucher as lasting "forever" would therefore be inaccurate.
-
-<!-- pagebreak -->
-
-## 6. More Item Patterns
-
-You can append the following block to the `main.lua` from section 3. It uses the same provider with separate IDs. The parent voucher is registered before its upgrade, and every item explicitly declares its price.
-
-```lua
-local S = assert(Showstreak)
-local function add(def)
-    local id, why = S.register_item(def)
-    assert(id, tostring(why))
-end
-add{
-    id = 'showstreakexample_budget', kind = 'voucher',
-    effect = 'money', value = 2, price = 3,
-    art = 'v_seed_money',
-    loc_txt = {name = 'Budget', text = {'Start with +$#1#'}},
-}
-add{
-    id = 'showstreakexample_budget_plus', kind = 'voucher',
-    effect = 'money', value = 3, price = 5,
-    requires = 'showstreakexample_budget', art = 'v_seed_money',
-    loc_txt = {name = 'More Budget', text = {'Start with +$#1#'}},
-}
-add{
-    id = 'showstreakexample_risk', kind = 'contract',
-    effect = 'blind', value = 0.15, price = 0, reward = 4,
-    art = 'j_joker',
-    loc_txt = {name = 'Risk', text = {'Higher blinds',
-                                    'Win to earn #2# Stars'}},
-}
-add{
-    id = 'showstreakexample_low_stake', kind = 'trick',
-    effect = 'stake', value = -1, price = 3, art = 'c_world',
-    family = 'showstreakexample_tickets', family_weight = 1,
-    loc_txt = {name = 'Lower Stake', text = {'Lower next stake'}},
-}
-add{
-    id = 'showstreakexample_case', kind = 'pack', effect = 'pack',
-    value = 3, choose = 1, pool = 'props', price = 3,
-    art = 'p_arcana_normal_1',
-    loc_txt = {name = 'Case', text = {'Choose #2# of #1# items'}},
-}
-```
-
-The parent and upgrade vouchers stack: buying both produces a +5 money bonus. `requires` controls the upgrade's eligibility; it does not declare that the upgrade automatically replaces its parent.
-
-A family receives one weight as a group, and member weights are then applied within that group. Ten tickets in one family should not occupy ten times as much of the shop's offer pool. All members must share the same family_weight. An item's ordinary weight and the family's family_weight serve different purposes.
-
-The `props` pool contains props and tricks; `tricks` contains only tricks. The API does not accept an array of your own IDs in place of pool. An item ID is not repeated within a single opened pack. Eligibility is checked before selection.
-
-<!-- pagebreak -->
-
-## 7. Localization and Custom Artwork
-
-The generated center belongs to the `Showstreak` description set and uses the key `sstreak_item_<full ID>`. For the tutorial item, that is `sstreak_item_showstreakexample_spare_hand`. You can provide languages directly in loc_txt, as in section 3, or add them through your mod's ordinary localization files. English in loc_txt itself is useful when an old item must be restored from a save.
-
-Description variables are `#1#` for value, `#2#` for reward or the number of choices allowed by a pack, and `#3#` for the value plus the sum of its prerequisite chain. For blind/boss/prices, `#1#` contains localized words for an exact ratio, such as "one fifth", rather than automatically supplying a numeric percentage. Write the surrounding sentence to fit that substitution. Balatro formatting such as `{C:blue}` is allowed in loc_txt; those braces are forbidden in Showman dialogue.
-
-To use your own PNG, register the atlas before the item. This additional example **requires files you supply** at `assets/1x/my_cards.png` and `assets/2x/my_cards.png` in the provider mod. The cell sizes are 71x95 and 142x190 respectively; pos below selects the first cell. The basic ready-made example needs no PNGs.
-
-```lua
-local S = assert(Showstreak)
-SMODS.Atlas{
-    key = 'showstreakexample_cards',
-    prefix_config = {key = false},
-    path = 'my_cards.png', px = 71, py = 95,
-}
-local id, why = S.register_item{
-    id = 'showstreakexample_custom_art',
-    kind = 'prop', effect = 'hands', value = 1, price = 2,
-    atlas = 'showstreakexample_cards', pos = {x = 0, y = 0},
-    loc_txt = {name = 'Custom Prop', text = {'+#1# hand'}},
-}
-assert(id, tostring(why))
-```
-
-The unique full atlas key is explicitly selected through prefix_config; the same key is passed to register_item. If you use Steamodded's standard prefixing, use the actual registered key instead of guessing it from the PNG filename.
-
-`art` reuses only an existing center's static atlas/pos. It does not inherit that center's animation, shaders, or gameplay calculate function. Registration before injection into G.P_CENTERS is allowed if the center is already in SMODS.Centers. If a texture is missing after an update, a restored item may use native artwork while retaining its saved effect.
-
-Check both texture scales, long translations, tooltips, and language changes. Text color, artwork, and audio feedback must not suggest an incorrect item lifetime.
-
-<!-- pagebreak -->
-
-## 8. Adapting an Existing Deck
-
-An adapter **does not create a Back or execute its effect**. It tells Showstreak the deck's resource baseline for calculations and eligibility filtering. Register an ordinary deck with Steamodded first, then register its adapter. This tutorial deck grants +2 hands and uses the native centers atlas, so it needs no new PNG.
-
-```lua
-local S = assert(Showstreak)
-SMODS.Back{
-    key = 'reserve',
-    pos = {x = 0, y = 0},
-    config = {hands = 2},
-    unlocked = true, discovered = true,
-    loc_txt = {name = 'Reserve Deck',
-               text = {'Start with {C:blue}+2{} hands'}},
-}
-local key, why = S.register_deck{
-    key = 'b_sse_reserve', version = 1,
-    baseline = {
-        money = 4, hands = 6, discards = 3, hand_size = 8,
-        joker_slots = 5, consumable_slots = 2, deck_size = 52,
-        shop_slots = 2, booster_slots = 2,
-    },
-}
-assert(key, tostring(why))
-```
-
-This block assumes the manifest prefix `sse`. Change the adapter key if your prefix differs. Do not use the same Back key in two mods. Add the tutorial deck when creating a **new** campaign; registering an adapter does not add the deck to a previously saved selection.
-
-Baseline must contain **exactly the nine resources** from section 5, without ante. Money must be an integer from -999 to 999; the other resources must be integers from 0 to 999. A missing, additional, or incorrectly typed resource causes rejection. The key must identify an existing Back, start with `b_`, and not already have an adapter. Version is 1..999999 and defaults to 1.
-
-A static baseline describes the deck under factory starting settings, before stake effects. For explicit player-defined starting values, Showstreak adds the difference from the factory value. In this example, default hands are 4, the deck adds +2, and the baseline is 6. If the player sets base hands to 7, the result before stake effects is 9.
-
-Any change to the starting cards must agree with the actual Back. Baseline deck_size does not itself implement your deck's suits, ranks, or special rules. The preview must agree with the actual run start.
-
-<!-- pagebreak -->
-
-## 9. A Computed Baseline and a Named Deck Ticket
-
-Instead of a static table, register_deck accepts a baseline function. This is an exception to the data-only rule for item definitions. The function receives a copy of rules and returns the **final resources before stake effects**, already accounting for the player's settings. Showstreak does not add the starting-value difference a second time.
-
-This is an alternative to the static registration in section 8; do not run both for the same key:
-
-```lua
-local S = assert(Showstreak)
-local key, why = S.register_deck{
-    key = 'b_sse_reserve', version = 1,
-    baseline = function(rules)
-        local s = rules and rules.version == 2 and rules.start
-        if not s then
-            s = {money = 4, hands = 4, discards = 3,
-                 hand_size = 8, joker_slots = 5,
-                 consumable_slots = 2, deck_size = 52,
-                 shop_slots = 2, booster_slots = 2}
-        end
-        return {
-            money = s.money, hands = s.hands + 2,
-            discards = s.discards, hand_size = s.hand_size,
-            joker_slots = s.joker_slots,
-            consumable_slots = s.consumable_slots,
-            deck_size = s.deck_size, shop_slots = s.shop_slots,
-            booster_slots = s.booster_slots,
-        }
-    end,
-}
-assert(key, tostring(why))
-```
-
-The callback is trusted code from your mod. It may be called for previews, so do not draw from RNG, make network requests, write saves, or mutate global state. The returned table is validated when used; an incomplete result raises a diagnostic naming the provider and deck. Successful registration alone does not prove that every callback result is valid.
-
-After either adapter, you can add a ticket:
-
-```lua
-local id, why = Showstreak.register_item{
-    id = 'showstreakexample_reserve_ticket', kind = 'trick',
-    effect = 'set_deck', value = 1, deck = 'b_sse_reserve',
-    price = 3, art = 'c_world',
-    family = 'showstreakexample_tickets', family_weight = 1,
-    loc_txt = {name = 'Reserve Ticket',
-               text = {'Use Reserve Deck for the next run'}},
-}
-assert(id, tostring(why))
-```
-
-<!-- pagebreak -->
-
-## 10. Showman Dialogue
-
-Registration accepts only `provider`, `id`, `event`, `match`, `priority`, `once`, and `text`. An unknown field is rejected with `field`. Fields such as presentation, animation, calculate, sprite, and custom callbacks are not supported here: Showstreak's controller chooses the expression and transition back to idle.
-
-`text['en-us']` is required. Each language contains an array of 1..4 strings with a combined length of at most 140 UTF-8 codepoints. Strings cannot contain `{`, `}`, CR, or LF. Multiple source strings are joined into one reaction and reflowed; they do not prescribe four fixed on-screen lines.
-
-The current renderer measures text width, targets five displayed lines within width 2.72, and reduces scale from 0.30 to 0.24. At the minimum scale it preserves the words even if the target line count is exceeded. Test your longest names and substitutions, and shorten the wording yourself rather than relying on automatic ellipsis.
-
-Priority is an integer from 1 to 90, with a default of 50. A higher priority helps a matching reaction get selected, but repetition history and context also matter. `once=true` means once per profile: the reaction is remembered when it is selected for a visible screen. Merely sending an event does not guarantee that the player sees the text.
-
-Language fallback for an external reaction checks the requested code, normalized code, base language, game language, default, and en-us. Supported game codes are `en-us`, `ru`, `de`, `es_419`, `es_ES`, `fr`, `id`, `it`, `ja`, `ko`, `nl`, `pl`, `pt_BR`, `zh_CN`, and `zh_TW`. Preserve filename spelling and case on case-sensitive systems.
-
-`match` defines exact comparisons against public fields. Strings, booleans, and finite numbers are accepted. A field absent from the event does not match. Campaign context may replace supplied stars/deck/stake values with their current values.
-
-| Group | Fields for matching and substitution |
-|---|---|
-| Item/action | item_id, source, effect, kind, lifetime, value, reward, price |
-| Campaign/shop | stars, free_slots, deck, stake, ante, cost, rerolls, remaining |
-| Native game | native_key, native_set, native_action |
-| Result | wins, reason, amount, dark_amount, has_active, record, act_reward, won_bet |
-
-`#item_name#`, `#deck_name#`, and `#native_name#` are additional localized **display** names, not match fields. An unknown or missing substitution becomes `?`. Input strings are sanitized and trimmed to 160 codepoints; numeric values must be finite. There is no separate 1e9 magnitude limit for event data. Do not supply hidden masks, future offers, or any other result that the player has not yet been shown.
-
-<!-- pagebreak -->
-
-## 11. Events and Player Preferences
-
-Built-in successful actions include buy, voucher, contract, pack, take, use, reveal, remask, and mask. `intermission` reports an accepted Intermission. For Showstreak cards, source distinguishes buy, held, pack, and mask. Purchasing a preparation item and using it are separate events. Do not manually send a second buy event on top of the one Showstreak has already generated.
-
-A custom event name at registration must begin with the exact provider ID and a colon, such as `ShowstreakExample:encore`. Event names may contain letters, digits, `_`, `:`, and `-`. The reaction ID itself still uses `showstreakexample_`.
-
-```lua
-local S = assert(Showstreak)
-local id, why = S.register_showman_reaction{
-    id = 'showstreakexample_encore',
-    event = 'ShowstreakExample:encore',
-    match = {source = 'encore'}, priority = 60, once = false,
-    text = {
-        ['en-us'] = {'An encore worth #amount# Stars.'},
-        ru = {'Выход на бис принёс #amount# звезды.'},
-    },
-}
-assert(id, tostring(why))
-```
-
-After your mod's action succeeds, report the **actual** result:
-
-```lua
--- Only after your own action has actually succeeded:
-Showstreak.showman_event('ShowstreakExample:encore', {
-    source = 'encore', amount = 2,
 })
 ```
 
-This call does not award two Stars, perform a transaction, or open a screen; it requests presentation of the event. Do not call it every frame or put it in startup code expecting the player to see the reaction immediately. Context, preferences, and repetition rules determine what is actually displayed.
+Price is Gold Stars, not native run dollars. `value` is an integer delta for
+resource effects. Native description `#1#` displays that value; colored markup
+is valid here. `art='j_joker'` references an existing center's artwork. The host
+creates an omitted Showstreak center, not another ordinary Joker in native packs.
 
-Players have independent quips, voice, effect_sounds, and reduced_motion preferences. Do not force them on for an integration. Visual reactions may still work with voice disabled; text delivery is not promised with quips disabled. Showman's randomness is separate from gameplay randomness.
+The resource effects cover starting cash, hands, discards, hand size, Joker and
+consumable slots, deck size and shop slots. Native `blind`, `boss`, `prices` use
+fractional changes. A value of `0.15` means +15%, not a multiplier of fifteen.
+Contributions to the same modifier add together. Test costs and penalties at
+the strongest allowed tier and with other modifiers; validation is not a
+balance designer.
 
-The existing helper `Showstreak.visuals.configure_host_sprites` changes the frame mapping for newly created portraits, but it is not one of the API v1 registration functions and does not give a reaction author control over a specific frame. Ordinary provider mods do not need it. Replacing the global appearance requires a separate check against the current visual controller; do not use the reaction API to introduce it as a hidden callback.
+Use the Run Info preview to verify the effect before starting. Then test the
+actual next run, save/reload it, and confirm the prop does not grant again.
 
-<!-- pagebreak -->
+<!-- page-break -->
 
-## 12. Saves and Provider Updates
+## 6. Vouchers, contracts, tricks and packs
 
-A new campaign copies its rules, item and condition definitions, catalog order, and provider information. This is a frozen snapshot. Changes in a new integration version apply to new campaigns; changing value in the live catalog does not update an existing campaign.
+Choose a kind for the player's interaction and lifetime, not for its card art.
+The host assigns activation and visual family from that kind.
 
-Providers represented in the saved catalog and enabled decks are required, **not just providers of items the player has purchased**. If a required provider disappears, continuation is blocked with an explanation. Leaving the mod folder installed while removing all its registrations is not enough to retain its previous integration capability.
+| Kind | The player does | What remains |
+| --- | --- | --- |
+| Voucher | Buys it | Active across runs until Intermission/end |
+| Contract | Accepts it for free | Next-run change and victory reward |
+| Trick | Holds it, then Uses it | Its immediate supported action |
+| Pack | Opens, then picks | Props/tricks enter inventory; version-2 vouchers/Bets activate immediately |
 
-| Update | Expected behavior |
-|---|---|
-| Add a new item | It appears in new campaigns |
-| Change value for an existing ID | New campaigns use the new value; existing ones use the saved value |
-| Retire an ID while keeping its provider | The old definition can be restored when its card is shown |
-| Remove a required mod | Continuation is blocked |
-| Change only the version number or artwork | Neither automatic rejection nor a guarantee of compatibility |
-| Change the native Back or external hooks | The author remains responsible; frozen data does not freeze Lua code |
+Version-2 packs also grant vouchers or Bets immediately when selected. They do
+not put those kinds in held inventory. The next choice rechecks prerequisites,
+Bet conflicts and capacity; a blocked choice is not consumed, and selection
+does not cost additional stars.
 
-For an ID removed from the live catalog, Showstreak restores the center from its saved definition. Current provider translations take precedence; loc_txt from the save supplies a fallback. Textures and code are not embedded in the save. If the artwork is unavailable, native artwork is used without changing the saved effect.
+The SDK's Stage Budget is a voucher adding $2 to subsequent starts. Short Set
+is a free contract with one fewer hand and two extra stars on victory. Its
+description must not promise the reward merely for accepting. Rehearsal Ticket
+uses `set_deck` for the next run; it requires the target deck to be enabled.
 
-Keep public IDs stable while the item's meaning remains the same. For a fundamentally different meaning, prefer a new ID that does not replace the old one in players' saves. An item's `content_version` and an adapter's `version` are metadata, not automatic migration mechanisms. There is no public migrate/register_migration API. Do not edit players' *.jkr files or schema numbers to bypass diagnostics.
+Vouchers can use the normal run effects and extras such as `reward`,
+`held_slots`, `free_reroll`, `reveal_act`. A voucher's `requires` must name an
+already registered voucher. Register a parent before its upgrade and verify
+the cumulative chain description. Do not simulate a prerequisite by checking
+live purchase state while registering.
 
-Intermission preserves the frozen catalog; accepting it does not load items from a newer provider version. Older campaigns' policies are not silently extended with new content either.
+Backstage Case is a three-offer pack from `props`, choose one. This pool includes
+eligible props and tricks. The `tricks` pool restricts it to tricks. Counts are
+1–5; selection count cannot exceed the offered count. The API does not expose
+arbitrary pack generation callbacks or new shop categories.
 
-Before releasing an update, test an existing save with a purchased or retired item, EN/RU text, a restart, and a temporarily disabled provider. Keep compatible registrations that can be tested while players may still be continuing campaigns from previous versions.
+In 1.3.0, use `pack_version=2` and `capabilities.pack_pools >= 2` for `vouchers`
+or `mixed`. Version 2 permits one or two selections (vouchers: exactly one),
+normalizes the expansion cap to six, and lets Prop Master add an offered option
+without adding a selection. Mixed pools guarantee a paid option or compatible
+paid pair, not only free Bets. Open choices persist across reloads. The
+[API appendix](API_130.md#pack-pools-capability-2) contains a registration example.
 
-<!-- pagebreak -->
+Weights are integers 1–100. A namespaced family groups related variants before
+member weighting, so adding many sibling tickets need not flood the entire
+shop. Every sibling must agree on `family_weight`. Keep families about selection
+frequency; they do not change ownership, lifetime or prerequisite semantics.
 
-## 13. Diagnostics and Common Errors
+See the exact fixed trick values and allowed extra fields in API.md. A custom
+callback cannot be smuggled into a data-only trick definition; use a registered
+run effect when the intended operation belongs at run start.
 
-The registration functions return **two values**. Use `local id, why = ...`; an assert message without reason hides the cause. For a center error, inspect `S.api.last_error`.
+<!-- page-break -->
 
-| Reason | What to check |
-|---|---|
-| registration_closed | The call runs after boot; move it into mod loading |
-| data_only | A function, metatable, cycle, userdata, NaN, or infinity is present |
-| provider | The ID is incorrect or the mod is unavailable |
-| id / namespace | Mod ID, SMODS prefix, and item namespace have been confused |
-| duplicate | The ID/adapter is already registered, or the code ran twice |
-| kind_effect / value | An incompatible pair, wrong type, or incorrect fixed value |
-| price / reward | Missing price, a paid contract, or a contract without reward |
-| requires | The parent is not a voucher, has not been registered yet, or refers to itself |
-| art / atlas | A missing center/atlas, non-integer pos, or incorrect key |
-| deck / deck_adapter / baseline | A missing Back/adapter or an incomplete set of nine resources |
-| family / family_weight / weight | Another provider's namespace, inconsistent group weights, or a value outside 1..100 |
-| pack | An unsupported pool, value outside 1..5, or choose greater than value |
-| text / match / event / field | Invalid dialogue, a non-public data field, an invalid event name, or an unknown field |
-| version / content_version | An invalid integer for the corresponding version |
+## 7. Describe a real native deck
 
-`provider_manifest()` returns copies of the providers and mods tables. A provider has version and capabilities: items, decks, and showman. `mod_report()` includes id, name, version, loaded, integrated, capabilities, changed, and missing. `environment_report()` lists the game and loaders separately. These functions provide diagnostics; they do not authorize modifying internal state.
+Registering a deck adapter does not create a playable Back. The SDK first uses
+`SMODS.Back` with key `rehearsal`, native atlas art and `config.dollars=2`.
+Steamodded gives it key `b_ssex_rehearsal`. The hook then registers that exact key
+with Showstreak and supplies a complete starting baseline.
 
-**An item does not appear:** first verify the registration return value, then check that this is a new campaign, that parent voucher requirements are met, that the deck/effect is eligible, and that shop offers are random. Successful registration does not guarantee an offer.
-
-**The item was bought but has no effect:** a prop requires Use; vouchers/contracts activate when bought/accepted; tricks act immediately on Use. Compare the result against the selected deck's and stake's resources.
-
-**A reaction does not play:** inspect text/match, once status for the profile, player preferences, and the active screen. showman_event does not guarantee an interruption of the current reaction. **A campaign will not continue:** check the missing provider and required decks; do not erase saves to hide the problem.
-
-<!-- pagebreak -->
-
-## 14. Testing Before Release
-
-Start with Lua syntax checks and contract tests in the source tree. The player ZIP does not need to contain tests. From the Showstreak source tree, run the test runner with the LuaJIT DLL from your Windows game installation:
-
-```text
-python Mods/Showstreak/tests/run_tests.py <path-to-lua51.dll>
+```lua
+-- This is the SDK's factory baseline for its native +$2 Back.
+baseline = {
+    money = 6, hands = 4, discards = 3, hand_size = 8,
+    joker_slots = 5, consumable_slots = 2, deck_size = 52,
+    shop_slots = 2, booster_slots = 2,
+}
 ```
 
-This runner uses a Windows DLL and reads the corresponding Balatro.exe. It is a development tool, not an instruction for players to install Python. The examples in this guide have also been executed separately against the real API functions with a mocked environment; that does not replace testing in the graphical game.
+All nine fields are required. Money may be negative within the documented range;
+other baseline resources are nonnegative integers. Do not include Ante, current
+round values or the player's spent resources.
 
-| Check | Expected result |
-|---|---|
-| Clean startup | No loading errors; the provider is integrated |
-| New campaign | Your entries are included in the saved catalog |
-| Buy/Use/Take | Correct activation timing and price; failed actions have no effect |
-| Contract | Victory reward is paid once |
-| Voucher chain | The parent unlocks the upgrade; effects stack |
-| Deck | Preview and run start agree under default/custom rules and stakes |
-| Save/restart | Resources are not reapplied; the catalog is retained |
-| Old save | A changed/retired ID uses its frozen definition |
-| Missing provider | Continuation is correctly blocked with a reason |
-| UI and input | Tooltips, languages, 1x/2x textures, mouse, and controller are usable and readable |
-| Showman | No repeated event spam; voice/quips/reduced motion are respected |
-| File package | One provider folder; no bundled external runtime, saves, or QA files |
+A static baseline means the deck at factory starts, before stake effects.
+Showstreak applies custom rule deltas automatically. If your deck has two extra
+hands, factory hands is 6. When the player changes base hands from 4 to 7, the
+preview should become 9, not stay 6 or accidentally become 11.
 
-Check both successful purchases and rejection with insufficient Stars, a full inventory, or a stale confirmation. For a deck callback, use the minimum, default, and maximum permitted settings, plus rules=nil. For text, test long names and an absent optional field.
+For a deck whose start depends on finalized rules, supply a deterministic
+`baseline(rules_copy)` function. It must return the final complete pre-stake
+baseline and account for those custom starts itself. Do not also add the static
+delta. Keep this callback pure: previews may call it repeatedly. It is not a
+place to shuffle cards, draw RNG or grant resources.
 
-A test profile keeps your ordinary gameplay history separate, but it is not an independent sandbox for all mod code. Keep backups of test saves and do not run debug setters against your main profile. Do not alter gameplay RNG merely to demonstrate an item in a public build.
+Test the deck in ordinary Balatro first, then in a Showstreak series using
+factory and custom starts, several stakes, and a named deck trick. The adapter
+improves preview and bounds checking; it cannot verify all hooks in a complex
+foreign deck. Increase its adapter version if the saved baseline contract
+becomes incompatible, and keep the required provider installed for old series.
 
-The "integrated" label means an API capability was registered. It does not guarantee compatibility with every external hook, game balance, or every combination of mods.
+<!-- page-break -->
 
-<!-- pagebreak -->
+## 8. Register conditions and Casting peeks
 
-## 15. Packaging Your Own Mod
+A condition joins the existing mask/Act engine. You provide its category, effect
+and ordered tier values; the host handles offers, visibility, selection,
+accumulation, removal and reset. `register_mask` names the same registration API.
 
-Your ZIP should contain one folder with your manifest, main.lua, your own scripts/assets/localization, player instructions, and terms for your code and resources. Declare Showstreak >=1.0.0, or the later minimum version your integration actually requires, as a dependency. State the exact game/loader combination you tested in the release description.
+<!-- sdk-check: hook -->
+```lua
+assert(api.register_condition {
+    id = 'showstreakexample_guide_toll', category = 'economy',
+    effect = 'money', values = {-1, -2, -3}, minimum = 0,
+    loc_txt = {
+        ['en-us'] = {name = 'Stage Toll',
+            text = {'Start runs with $#2# less'}},
+        ru = {name = 'Плата за сцену',
+            text = {'На старте на $#2# меньше'}},
+    },
+})
+```
 
-Do not bundle Showstreak, Balatro, Steamodded, Lovely, original Showstreak resources, config/Showstreak.jkr, user presets, *.jkr files, test profiles, dumps, or QA scripts. Players install Showstreak separately. The LICENSE permits independently written integrations; supplied tutorial examples and documentation are for learning and local testing, without permission to redistribute them. Distributing copies of the examples or other Showstreak files requires separate permission from the author.
+This example uses the native money effect. The SDK's Tip Tax instead uses its
+custom Lucky Tip handler. Categories are `economy`, `blinds`, `resources`;
+values are a dense array of 1–16 nonzero tiers. `minimum` is a resource eligibility
+floor, not a callback. Temporary conditions use tier 1. Higher tiers become
+eligible as local Acts progress, subject to the engine's other checks.
 
-Before publishing, extract **your actual final ZIP** into a test environment and repeat the minimum sequence: load, create a new campaign, obtain an item, Use, start a run, save, and restart. Testing a developer's working folder will not reveal a PNG or module omitted from the archive.
+Only Casting enables native `ban_jokers`, `ban_consumables`, `ban_vouchers`,
+`ban_packs` conditions. Normal registered resource conditions work with their
+ordinary lifetimes. Do not add conditions directly to a running saved table;
+new registrations belong to new series catalogs.
 
-Explain to players that removing a provider may block continuation of campaigns whose catalogs contain its items. Do not promise unrestricted removal in the middle of a campaign. For updates, explain which changes apply only to new campaigns.
+A Casting reveal voucher uses `effect='casting_reveal'`, `value=6` to expose
+the sixth offer. Positions 2–7 are valid; the first is already visible. It does
+not choose a Joker for the player or add another pick. The player still chooses
+three of seven. The SDK's Sixth Spotlight demonstrates this exact position.
 
-## 16. Where to Verify the Contract
+Like other vouchers, it is removed by an accepted Intermission. Do not keep a
+parallel permanent flag that secretly leaves its position visible afterward.
+Test purchase, the next Casting offer, save/resume, and an accepted Intermission.
 
-The main companion reference is [API.md](API.md); the tutorial provider is documented in [examples/integration/README.md](examples/integration/README.md). These materials cover Showstreak 1.0.0 and API v1. They are supplied with the source/developer materials, separately from the lean player ZIP; this guide contains the code needed for its standalone tutorial.
+<!-- page-break -->
 
-Primary implementation sources:
+## 9. Define a custom run effect
 
-- `scripts/integration/api.lua`: registration, value limits, artwork, families, adapters, and reports.
-- `scripts/showman/showman.lua`: accepted reaction fields, event/match/text, substitutions, repetition, and public event delivery.
-- `scripts/localization/locale.lua`, `localization.lua`, `text.lua`: fallback, description variables, and text wrapping.
-- `scripts/ui/cards.lua`: creating and restoring centers from the saved catalog.
-- `scripts/integration/integration.lua`: applied resources, baselines, provider manifests, and continuation checks.
-- `scripts/core/core.lua`: the deterministic catalog, items, packs, vouchers, contracts, and Intermission.
+Lucky Tip demonstrates a behavior that the native fixed `money` effect does not
+describe: multiply an active value by a deterministic seeded integer from one
+to three. Its preview and actual grant draw from the same independent stream.
 
-In the source version of the project, further checks are in `tests/api_v5_spec.lua`, `api_restore_v7_spec.lua`, `showman_v7_spec.lua`, `presets_v5_spec.lua`, and the save/Intermission tests. The v5/v7 suffixes identify when the tests were introduced, not the required public API version.
+Register the handler first, then reference its ID from items or conditions.
+The following is a complete minimal registration under the SDK provider. Its
+fixed counter is an authoring example; the executable SDK uses visible dollars.
 
-This guide does not introduce mechanisms beyond the implementation. If the extension you need is absent from the documented contract, first agree on and implement a new API capability, then document it and update your provider's required version.
+<!-- sdk-check: hook -->
+```lua
+assert(api.register_effect {
+    id = 'showstreakexample_guide_tokens', version = 1,
+    kinds = {prop = true, voucher = true, contract = true},
+    conditions = true,
+    value = {min = -20, max = 20, integer = true},
+    loc_txt = {
+        ['en-us'] = {name = 'Admission Tokens', text = {'#1# tokens'}},
+        ru = {name = 'Входные жетоны', text = {'#1# жетонов'}},
+    },
+    apply = function(value, context)
+        context.game.example_tokens = value
+        return {tokens = value}
+    end,
+})
+```
+
+The handler opts into item kinds and/or conditions. `value` specifies the range
+for an individual definition, not the total after multiple active contributions.
+Showstreak sums contributions with the same effect ID and invokes one callback
+with the aggregate; zero produces no callback. Multiple handlers execute in
+sorted ID order. Avoid relying on another provider's ID ordering for correctness.
+
+Use `version` as an exact gameplay/saved-state contract. Keep the code loaded
+under the same provider. Only handler metadata enters the frozen catalog;
+functions never enter the save. An item captures the handler provider/version
+when it registers, so registering the handler afterward cannot repair an
+already rejected item.
+
+Custom handlers support props, vouchers, contracts and conditions. They do not
+create arbitrary instantaneous trick operations, new shop pools or unrestricted
+save migration. For broader native behavior, your own mod owns its own SMODS
+hooks and must keep them compatible with this defined start/resume contract.
+
+<!-- page-break -->
+
+## 10. Keep previews and saves honest
+
+The custom effect context supplies `series_id`, `run_id`, `seed`, `locale`, a
+copied `rules` table, `phase`, an opaque operation `token`, and `random(upper)`.
+Apply/resume also receive the live native `game`. Preview receives no game object,
+hidden mask, campaign object or future offer.
+
+Use `context.random(upper)` for reproducible effect-local choices. Preview starts
+at the same initial seed as apply without consuming campaign or native RNG.
+Matching draws in matching order give matching results. Repeated previews must
+not grant resources, write files, change registrations or advance a private
+global random counter. The SDK's displayed Lucky Tip amount equals its actual
+starting-cash change.
+
+`apply` returns nil or a plain saved-state table. Store facts you need on resume,
+such as the seeded amount; do not store cards, game objects, functions or cycles.
+The host binds the saved record to token, value and effect version. It checkpoints
+before application and after completion. A completed effect cannot grant again
+when a native save resumes.
+
+`resume(value, context, state_copy)` is optional. Restore transient observers or
+UI handles; never repeat the opening grant. The player may already have spent
+those dollars. Return nil/true on success, false or an exception to fail. A
+restored game receives at most one resume callback for that completed effect.
+
+A save captured before the first apply can complete the pending operation.
+An already-started incomplete or failed operation blocks rather than guessing
+whether to replay side effects. Native saving is asynchronous: a submitted
+checkpoint is not a durable disk acknowledgment or cross-service transaction.
+If your own external operation needs idempotency, honor the stable token too.
+
+Installed Lua mods are trusted code. Copied context is an interface boundary,
+not a sandbox preventing global access. Your provider remains responsible for
+native invariants and for not performing unrelated side effects in a preview.
+
+<!-- page-break -->
+
+## 11. Add restrictions without an allow override
+
+A ban source contributes a deny. It never gains final authority to allow an
+object that another source denied. This is the useful compatibility rule for
+Banner, Casting locks, conditions and your own integration.
+
+<!-- sdk-check: hook -->
+```lua
+assert(api.register_ban_source {
+    id = 'showstreakexample_guide_cash_only', version = 1,
+    is_banned = function(key, context)
+        return key == 'j_credit_card'
+    end,
+})
+local result = api.query_object_ban('j_credit_card')
+assert(result.banned)
+```
+
+For a static list, replace `is_banned` with `keys={j_credit_card=true}`. Exactly
+one form is allowed. Predicate context contains public series/run IDs, phase and
+copied rules. Return a boolean on every path. A missing return is not false;
+it is an invalid predicate result and fails closed for that object.
+
+`query_object_ban` returns the key, a boolean and a reasons array. A reason
+identifies Banner, your source, an external native restriction, Casting lock or
+condition. Use this information to explain availability in your own tooling.
+Do not edit `G.GAME.banned_keys` directly as your integration contract.
+
+Banner can rebuild its native table when a player changes its settings.
+Showstreak's adapter reasserts its own snapshot restrictions afterward. Removing
+Banner's reason does not remove another source's reason. Querying recursively
+from a source's own predicate is rejected to avoid a loop.
+
+The host filters supported acquisition paths and preserves existing owned cards.
+A foreign mod with an unrelated direct object-construction path still needs
+native testing. A registered badge cannot prove every foreign hook is covered.
+Keep source version/provider stable for a saved series; an incompatible version
+or missing required source should report an error, not silently loosen its rules.
+
+<!-- page-break -->
+
+## 12. Offer a new starting category
+
+Use `register_start_addon` for content chosen before a run: a category such as
+charms, tickets or another mod's starting companion. Sleeves and Partner already
+have their own adapters. Do not reuse their keys or change their callbacks.
+
+The SDK registers `showstreakexample_pocket`, shown to players as Opening Ticket.
+The category is off in built-in rules. With it enabled, each run offers five
+frozen entries: Copper, Silver, Golden, Velvet and Encore Ticket, granting one
+through five opening dollars. This is a deliberately obvious test catalog,
+not a recommendation for five equally balanced choices.
+
+Register required `available`, `catalog`, `display`, `apply` functions and an
+optional `resume`. Add a required integer contract `version`, localized category
+`name` and `description`. Addon localization uses strings or language-to-string
+maps, not the native `{name,text}` card format.
+
+For a current 1.3.0 category, add `starting_joker_count` as a conservative maximum
+integer from 0 to 999. Zero explicitly declares no starting Jokers; omission
+means unknown. Blue Skittles/Red Brain need that capacity guarantee for a selected
+category. The baseline teaching example leaves this field absent, so choose None
+when testing those combinations, or author a versioned 1.3.0 category declaring
+zero for its money-only grant. A new declaration does not modify old frozen series.
+
+`catalog(context)` returns at most 512 dense records with `key`, optional `data`,
+optional native `center`. Keys must be unique and cannot be `none`. Put only
+plain serializable content in data. The example stores English/Russian names
+and dollar amounts in that frozen data and uses `j_joker` for native preview art.
+
+`display(entry_copy, context)` returns a name and optional description. It is
+pure and can run repeatedly; no card objects, callbacks or UI node trees belong
+in the return value. The native art comes from the entry's `center`. Ban checks
+use that center when provided, otherwise the entry key itself.
+
+Addon context uses `campaign_id`, `run_id`, `deck`, `stake`, `seed`, copied `rules`
+and `language`. These names differ from effect context's `series_id` and `locale`.
+Use the documented context for that callback rather than sharing an untested
+generic helper that assumes all contexts have identical fields.
+
+<!-- page-break -->
+
+## 13. Preserve the player's starting choice
+
+The host freezes an enabled addon's catalog for a new series. It draws up to five
+distinct eligible entries for each next run, and saves those offers. The player
+selects one or the explicit None option. Fewer entries give fewer choices; an
+empty eligible pool resolves to None. Reloading must not redraw the offer or
+silently select the best entry for the player.
+
+You do not need an additional settings editor or random picker to reproduce
+this behavior. Register the category; Showstreak exposes the pre-series toggle
+and the next-run review. The flag is `rules.start_addons[addon_id]`. It remains
+fixed after the series begins, including across Intermission. New live entries
+do not enter that old frozen catalog.
+
+`apply(entry, context)` runs after native setup through the event queue. It
+gets the confirmed frozen entry, live game, stable token and `phase='start'`.
+Return nil/true for success; false or an error prevents a silent incomplete
+start. The host records an `applying` checkpoint before calling you, then marks
+the operation applied and saves after it succeeds.
+
+Pending saved operations can finish their first apply on restore. Already applied
+ones call only optional `resume(entry, context)`, with `phase='resume'`; use it
+for ephemeral observers, not a second grant. An interrupted applying/failed
+record cannot safely be guessed into completion and is blocked. The same caveat
+about asynchronous native saves applies as with custom effects.
+
+If your provider becomes unavailable, its version changes, or a required center
+is missing, continuation explains the problem. Do not return a different catalog
+to hide missing saved content. If a callback accesses external resources, use
+the opaque token for its own idempotency and preserve the normal saved choice.
+
+Test a pending checkpoint, a completed save after spending resources, and repeated
+resume of the same restored game. The SDK checks the opening dollars remain
+unchanged after resume.
+
+<!-- page-break -->
+
+## 14. Give the Showman truthful, varied dialogue
+
+A Showman reaction is data attached to a confirmed public event. The sample
+`showstreakexample_spare_hand_bought` matches `event='buy'`, the exact item ID
+and `source='buy'`. It does not claim the prop has already been used.
+
+Use `api.get_showman_info()` to inspect current events, match fields,
+placeholders, expressions and deliveries. Fields vary by event. Exact matching
+supports strings, booleans and finite numbers; arbitrary callbacks and hidden
+mask inspection are not part of reaction selection.
+
+Each language provides one to four plain strings, at most 140 Unicode characters
+in total before substitution. Use `text['en-us']` as the required fallback.
+No braces or embedded newlines: speech is not a colored native tooltip. Named
+substitutions such as `#value#` and `#item_name#` refer to visible public facts.
+Missing fields display `?`; test your chosen event, not only an artificial preview.
+
+Add multiple distinct reactions for the same situation. `family` and `topic`
+help the host avoid repetitive variants. Priority is 1–90, default 50; increasing
+everything to 90 does not create better timing. `once=true` means a visible
+selection remembered per profile, not a once-per-run gameplay flag.
+
+An explicit `presentation` chooses an expression, gaze and delivery. The sample
+uses playful/center/bright. Aliases map to existing drawings; they do not imply
+extra sprite frames. Use the artist map API only with your own authored art.
+
+Supply `compact_text` when a long translated or substituted line may not fit.
+Make it shorter while preserving the same meaning. Preview through
+`api.preview_showman_reaction(id, data)` to inspect text, layout and presentation
+without speaking or altering gameplay RNG. It is still worth viewing the actual
+bubble at native UI scale.
+
+For your own completed action, register `MyStageMod:encore` and emit that same
+event afterward. Emission requests speech; player settings, context and repetition
+controls may keep it silent. Never use a visible line as proof gameplay succeeded.
+
+<!-- page-break -->
+
+## 15. Understand frozen content and Intermission
+
+A series is a saved agreement about its rules and catalog. Registration affects
+new series. Once a series exists, its own item/condition definitions, order,
+baselines and relevant extension metadata stay frozen. Its saved data contains
+no executable provider callbacks.
+
+In 1.3.0, a required update to save schema 7 has a preview and verified backup.
+It is separate from **Rules → Add new content**, which can add compatible
+missing IDs between runs. Existing definitions, rules and frozen offers remain
+intact apart from explicitly previewed compatibility changes. New catalog entries
+can change future random offers. Providers must not bypass either player decision.
+
+| Change | Effect on an existing series |
+| --- | --- |
+| Add a new item/condition | Stays outside until the player accepts a compatible catalog update |
+| Improve an available translation | Display can improve without new gameplay |
+| Retire an item ID, keep required provider | Frozen definition can rebuild display |
+| Remove required provider code | Continuation reports missing provider |
+| Incompatible effect/addon contract version | Continuation reports incompatibility |
+| Accept Intermission | Normal inventory/condition/reset behavior applies |
+
+`content_version` is not a migration hook. A mod's overall version is useful
+diagnostic metadata, while deck/source/effect/addon contracts have their own
+saved version checks. Do not keep an old custom effect version while radically
+changing its callback state shape. There is no automatic callback migration API
+to reconcile arbitrary changes.
+
+Intermission keeps the series identity, total win streak, profile Dark Stars,
+settlement history and frozen rules/catalog. It clears held items, owned vouchers,
+conditions and prepared next-run effects, and resets local progression and Gold
+Stars to the applicable starts. The next segment uses a new deterministic seed.
+
+Your Casting peek is a voucher and resets. Your custom voucher/condition effects
+follow those same normal lifetimes. A generic starting category remains enabled
+as a fixed rule, but its next run still receives a new normal choice and a new
+operation token. Do not store a separate permanent upgrade to evade the reset.
+
+The setup screen determines Dark Star eligibility. Foreign gameplay catalog
+content or enabled start addons do not earn built-in Dark Stars. Cosmetic
+Showman lines and ban sources alone do not automatically remove that eligibility.
+Never promise a reward independently of the host's actual rule check.
+
+<!-- page-break -->
+
+## 16. Localize for players, not the implementation
+
+Use a player-facing name and describe the action, timing and amount. “Start
+with $2 extra until Intermission” tells a player what they gain. “Sets the money
+field and persists a series modifier” belongs in this guide, not on a voucher.
+
+| Surface | Write this data |
+| --- | --- |
+| Item or condition | Native `loc_txt` name and text |
+| Custom effect | `loc_txt`, optional pure preview description |
+| Starting category | Plain localized name/description strings |
+| Starting entry | Localized display name/description |
+| Showman | Plain lines, expression/delivery, optional compact lines |
+
+Use exact locale keys such as `en-us` and `ru`; provide English fallback.
+Regional/base-language fallback helps missing variants, but it is not a reason
+to put English strings under every language key and claim a complete translation.
+The SDK provides actual English/Russian text for every visible example surface.
+
+Preserve `#1#`, `#2#`, `#3#` and native `{C:...}` tokens in card descriptions.
+Item `#1#` is value, `#2#` is reward or pack choice count, and `#3#` is the
+voucher-chain cumulative value. Condition `#2#` is its absolute tier value.
+Custom effect fallback preview replaces `#1#` with the aggregate. Do not assume
+one numbered variable means the same thing on every surface.
+
+For speech, preserve named substitutions and keep text within its source limit.
+Actual names may be longer after translation. Test the longest card/deck name,
+maximum amount, narrow bubble and compact fallback. Use the preview's fit data
+as a check, then inspect actual game rendering. Font width is not character count.
+
+Keep localization data serializable so frozen items and retired condition IDs
+retain meaningful text. Artwork fallback cannot restore a missing provider's
+code, and a readable tooltip cannot make an incompatible custom callback safe.
+Translate player-facing failure explanations in your mod without hiding the
+provider/field details available to modder diagnostics.
+
+<!-- page-break -->
+
+## 17. Verify behavior at the right level
+
+The kit's automated verification loads production Showstreak modules using the
+game's LuaJIT runtime. It checks the SDK in both load orders and executes marked
+complete tutorial registrations. Native SMODS/game objects are represented by
+a small harness; that verifies API behavior, not visual engine acceptance.
+
+For the supplied sample, the expected landmarks are:
+
+| Test | Expected result |
+| --- | --- |
+| Rehearsal Deck | Native +$2 and baseline money 6 at factory starts |
+| Spare Hand | Held after purchase, next-run +1 hand after Use |
+| Stage Budget | +$2 starts, normal Intermission reset |
+| Short Set | -1 hand, extra stars only on its win |
+| Backstage Case | Three eligible offers, one pick |
+| Sixth Spotlight | Exact Casting position 6 visible |
+| Lucky Tip | Seeded preview equals actual opening cash |
+| Opening Ticket | Five offers, chosen grant once |
+| Cash Only source | Credit Card denied even if another source allows |
+| Showman reaction | Correct purchase event and playful expression |
+
+In native Balatro, repeat the purchase/use/start/resume path. Save after spending
+some granted cash, quit and continue: spending must remain spent. Accept an
+Intermission and verify normal resets. Enable Banner's same ban, remove its own
+ban, and confirm the SDK source still denies. Also test Banner alone in ordinary
+Balatro so the integration does not disturb its original behavior.
+
+Run missing-provider and changed-version tests on disposable saves. Their
+expected result is a clear block, not a silent reward replay or replacement
+catalog. Test English/Russian tooltips and controller focus in the real menu.
+Do not modify a live player's save to force offers just for a screenshot.
+
+Maintain separate contract tests for pure logic and native acceptance for game
+hooks. Passing either alone is not a promise of compatibility with every mod,
+platform, font, audio setting or large-number library.
+
+<!-- page-break -->
+
+## 18. Package and maintain your integration
+
+Ship your own independently written integration as its own mod, with stable IDs,
+its own manifest, and a declared Showstreak dependency. Include your own authored
+files and resource licenses. Reference installed native artwork only under the
+original owners' applicable terms; the API does not grant rights to that art.
+
+Do not bundle Showstreak runtime files, its authored sprites, supplied guides,
+sample source or player data inside your distributed integration. The supplied
+example is for learning and local testing, not a redistribution license. If you
+want to redistribute these supplied files, obtain the author's separate
+permission. The kit's [LICENSE](../LICENSE) preserves the existing limited-use
+terms; this is not an open-source license.
+
+Before releasing an update, list which contracts changed. Translation-only fixes
+usually need no effect-version bump. A changed callback state shape or meaning
+does. Keep an old provider available for saved series if you intend them to
+continue; do not delete required registrations merely because the current shop
+no longer offers that item.
+
+Use `provider_manifest`, `mod_report` and `environment_report` to understand a
+support report. An integrated badge means registered supported content; it does
+not certify all unrelated hooks in that mod. Include the game/loader versions,
+provider versions, exact action and diagnostic code in a reproducible bug report.
+Never request a player's unrelated personal files for a routine API error.
+
+The kit contains three complementary documents: this workflow, the Russian
+workflow and the exact API reference. The installable sample is the tested full
+program; short unmarked schema fragments illustrate fields and are not whole
+mods. Keep your own tests aligned with the version of Showstreak you declare.
+
+A useful final release check is simple: a player can read the item, understand
+when it acts, choose it, start the run, save, return and receive exactly the
+promised behavior. The API work exists to make that ordinary play reliable.

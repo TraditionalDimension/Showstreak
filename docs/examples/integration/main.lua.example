@@ -1,32 +1,222 @@
--- Copy this file as main.lua beside ShowstreakExample.json to install.
-local S=assert(Showstreak,'Showstreak must load before its integration example')
-assert(S.api and S.api.version==1,'This example targets Showstreak API v1')
-local function item(def)
-    local id,reason=S.register_item(def)
-    assert(id,'Showstreak Example item: '..tostring(reason))
+-- Showstreak API v1 / revision 1.1.0. Learning and local testing only.
+-- See the repository LICENSE and README.md for deliberate local test setup.
+-- Artwork is referenced from the installed game at runtime.
+local mod = assert(SMODS.current_mod)
+local P = 'showstreakexample_'
+
+-- A real native Back implements the bonus; its adapter describes that bonus.
+SMODS.Back {
+    key = 'rehearsal',
+    atlas = 'centers', prefix_config = {atlas = false},
+    pos = {x = 0, y = 0}, config = {dollars = 2},
+    unlocked = true, discovered = true,
+    loc_txt = {
+        ['en-us'] = {name = 'Rehearsal Deck',
+            text = {'Start with {C:money}$2{} extra'}},
+        ru = {name = 'Репетиционная колода',
+            text = {'На старте ещё {C:money}$2{}'}},
+    },
+}
+
+local function words(en_name, en_text, ru_name, ru_text)
+    return {
+        ['en-us'] = {name = en_name, text = en_text},
+        ru = {name = ru_name, text = ru_text},
+    }
 end
-item{
-    id='showstreakexample_spare_hand',kind='prop',effect='hands',value=1,
-    price=2,art='j_joker',content_version=1,
-    loc_txt={
-        ['en-us']={name='Spare Hand',text={'{C:blue}+#1#{} hand each round','during the {C:attention}next run{}'}},
-        ru={name='Запасная рука',text={'{C:blue}+#1#{} рука каждый раунд','в {C:attention}следующем забеге{}'}},
-    },
-}
-item{
-    id='showstreakexample_stage_budget',kind='voucher',effect='money',value=2,
-    price=3,art='v_seed_money',content_version=1,
-    loc_txt={
-        ['en-us']={name='Stage Budget',text={'Start each run with {C:money}+$#1#{}','until Intermission or series end'}},
-        ru={name='Бюджет сцены',text={'{C:money}+$#1#{} в начале забега','до Антракта или конца серии'}},
-    },
-}
-local id,reason=S.register_showman_reaction{
-    id='showstreakexample_spare_hand_bought',event='buy',
-    match={item_id='showstreakexample_spare_hand',source='buy'},priority=60,once=false,
-    text={
-        ['en-us']={'An extra hand. Keeping something up your sleeve?'},
-        ru={'Лишняя рука. Припрятал ещё один козырь?'},
-    },
-}
-assert(id,'Showstreak Example reaction: '..tostring(reason))
+
+mod.showstreak_init = function(api)
+    assert(api.version == 1, 'This example requires Showstreak API v1')
+    local info = api.get_api_info()
+    assert(info.capabilities.custom_effects == 1)
+    assert(info.capabilities.start_addons == 1)
+    local function register(name, definition)
+        local result, code, detail = api[name](definition)
+        assert(result, 'Showstreak Example: ' .. name .. ': '
+            .. tostring(code) .. ': '
+            .. tostring(detail and detail.message))
+        return result
+    end
+    register('register_deck', {
+        key = 'b_ssex_rehearsal', version = 1,
+        -- Factory starting resources + the Back's $2, before stake effects.
+        baseline = {
+            money = 6, hands = 4, discards = 3, hand_size = 8,
+            joker_slots = 5, consumable_slots = 2, deck_size = 52,
+            shop_slots = 2, booster_slots = 2,
+        },
+    })
+    register('register_item', {
+        id = P .. 'spare_hand', kind = 'prop',
+        effect = 'hands', value = 1, price = 2, art = 'j_joker',
+        loc_txt = words('Spare Hand',
+            {'{C:blue}+#1#{} hand each round', 'during the next run'},
+            'Запасная рука',
+            {'{C:blue}+#1#{} рука каждый раунд', 'в следующем забеге'}),
+    })
+    register('register_item', {
+        id = P .. 'stage_budget', kind = 'voucher',
+        effect = 'money', value = 2, price = 3, art = 'v_seed_money',
+        loc_txt = words('Stage Budget',
+            {'Start runs with {C:money}+$#1#{}', 'Until Intermission'},
+            'Бюджет сцены',
+            {'На старте {C:money}+$#1#{}', 'До Антракта'}),
+    })
+    register('register_item', {
+        id = P .. 'short_set', kind = 'contract',
+        effect = 'hands', value = -1, price = 0, reward = 2,
+        art = 'j_joker',
+        loc_txt = words('Short Set',
+            {'One fewer hand each round', 'Win for #2# extra stars'},
+            'Короткий номер',
+            {'На одну руку меньше каждый раунд',
+                'Победа принесёт ещё #2# звезды'}),
+    })
+    register('register_item', {
+        id = P .. 'rehearsal_ticket', kind = 'trick',
+        effect = 'set_deck', value = 1, price = 2,
+        deck = 'b_ssex_rehearsal', art = 'c_world',
+        loc_txt = words('Rehearsal Ticket',
+            {'Use the Rehearsal Deck', 'for the next run'},
+            'Билет на репетицию',
+            {'Репетиционная колода', 'для следующего забега'}),
+    })
+    register('register_item', {
+        id = P .. 'backstage_case', kind = 'pack', effect = 'pack',
+        value = 3, choose = 1, pool = 'props', price = 2,
+        art = 'p_arcana_normal_1',
+        loc_txt = words('Backstage Case',
+            {'Choose #2# of #1#', 'props or tricks'},
+            'Чемодан за кулисами',
+            {'Выберите #2# из #1#', 'предметов или трюков'}),
+    })
+    register('register_item', {
+        id = P .. 'sixth_spotlight', kind = 'voucher',
+        effect = 'casting_reveal', value = 6, price = 4,
+        art = 'v_crystal_ball',
+        loc_txt = words('Sixth Spotlight',
+            {'Reveal Casting choice #1#', 'Until Intermission'},
+            'Шестой прожектор',
+            {'Открывает карту №#1# на Кастинге', 'До Антракта'}),
+    })
+
+    -- For a fixed cash change, prefer the native money effect.
+    register('register_effect', {
+        id = P .. 'lucky_tip', version = 1,
+        kinds = {prop = true, voucher = true, contract = true},
+        conditions = true, value = {min = -20, max = 20, integer = true},
+        loc_txt = words('Lucky Tip', {'A seeded opening cash change'},
+            'Счастливые чаевые', {'Денежный сюрприз на старте'}),
+        preview = function(value, context)
+            local amount = value * context.random(3)
+            local ru = context.locale == 'ru'
+            return {
+                name = ru and 'Счастливые чаевые' or 'Lucky Tip',
+                text = {(ru and 'На старте: $' or 'Opening cash: $')
+                    .. tostring(amount)},
+            }
+        end,
+        apply = function(value, context)
+            local amount = value * context.random(3)
+            context.game.dollars = context.game.dollars + amount
+            return {amount = amount}
+        end,
+        resume = function(value, context, state)
+            -- The native save already contains the cash, including spending.
+            -- No observer is needed for this example; never grant it again.
+            return true
+        end,
+    })
+    register('register_item', {
+        id = P .. 'tip_envelope', kind = 'prop',
+        effect = P .. 'lucky_tip', value = 2, price = 2, art = 'j_joker',
+        loc_txt = words('Tip Envelope',
+            {'A lucky tip for your next run', 'Opening cash: +$2 to +$6'},
+            'Конверт с чаевыми',
+            {'Чаевые для следующего забега', 'На старте: от +$2 до +$6'}),
+    })
+    register('register_condition', {
+        id = P .. 'tip_tax', category = 'economy',
+        effect = P .. 'lucky_tip', values = {-1, -2, -3},
+        art = 'j_joker',
+        loc_txt = words('Tip Tax',
+            {'At run start, lose #2# times', 'a seeded $1 to $3'},
+            'Налог на чаевые',
+            {'На старте теряете от $1 до $3,', 'умноженных на #2#'}),
+    })
+
+    -- Deny is additive: another source cannot permit this Joker for a series.
+    register('register_ban_source', {
+        id = P .. 'cash_only', version = 1,
+        is_banned = function(key, context)
+            return key == 'j_credit_card'
+        end,
+    })
+
+    local gifts = {
+        {'copper', 'Copper Ticket', 'Медный билет', 1},
+        {'silver', 'Silver Ticket', 'Серебряный билет', 2},
+        {'gold', 'Golden Ticket', 'Золотой билет', 3},
+        {'velvet', 'Velvet Ticket', 'Бархатный билет', 4},
+        {'encore', 'Encore Ticket', 'Билет на бис', 5},
+    }
+    register('register_start_addon', {
+        id = P .. 'pocket', version = 1,
+        name = {['en-us'] = 'Opening Ticket', ru = 'Стартовый билет'},
+        description = {
+            ['en-us'] = 'Choose one ticket before each run.',
+            ru = 'Выберите один билет перед каждым забегом.',
+        },
+        available = function(context) return true end,
+        catalog = function(context)
+            local entries = {}
+            for _,gift in ipairs(gifts) do
+                entries[#entries + 1] = {
+                    key = gift[1], center = 'j_joker',
+                    data = {en = gift[2], ru = gift[3], dollars = gift[4]},
+                }
+            end
+            return entries
+        end,
+        display = function(entry, context)
+            return {
+                name = {['en-us'] = entry.data.en, ru = entry.data.ru},
+                description = {
+                    ['en-us'] = 'Start with $' .. entry.data.dollars
+                        .. ' extra.',
+                    ru = 'На старте ещё $' .. entry.data.dollars .. '.',
+                },
+            }
+        end,
+        apply = function(entry, context)
+            -- Host persists its guard before calling this exactly once.
+            context.game.dollars = context.game.dollars + entry.data.dollars
+            return true
+        end,
+        resume = function(entry, context)
+            -- Keep the dollars from the save; no second grant.
+            return true
+        end,
+    })
+    register('register_showman_reaction', {
+        id = P .. 'spare_hand_bought', event = 'buy',
+        match = {item_id = P .. 'spare_hand', source = 'buy'},
+        priority = 60, family = P .. 'hands', topic = 'preparation',
+        presentation = {expression = 'playful', delivery = 'bright',
+            gaze = 'center'},
+        text = {
+            ['en-us'] = {'An extra hand. Keeping a trick up your sleeve?'},
+            ru = {'Лишняя рука. Припрятал ещё один козырь?'},
+        },
+        compact_text = {
+            ['en-us'] = {'An extra hand. Nicely prepared.'},
+            ru = {'Лишняя рука. Хорошо подготовился.'},
+        },
+    })
+end
+
+-- Before Showstreak: it discovers the hook. After it: call the hook once now.
+if Showstreak and Showstreak.api and Showstreak.api.ready then
+    local ok, code = Showstreak.initialize_integration(mod.id)
+    assert(ok, 'Showstreak Example initialization: ' .. tostring(code))
+end

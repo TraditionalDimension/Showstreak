@@ -1,105 +1,53 @@
-# Showstreak 1.0.0 - limits and validation / ограничения и проверка
+# Showstreak 1.3.0 — compatibility and limitations
 
-**Showstreak 1.0.0: first public release on [Nexus Mods](https://www.nexusmods.com/balatro/mods/947).** The checks below describe the tested 1.0.0 build; publication does not expand their scope.
+[English player guide](PLAYER_GUIDE_EN.md) · [Русская инструкция](PLAYER_GUIDE_RU.md) · [Toolkit](TOOLKIT.md) · [Changelog](../CHANGELOG.md)
 
-## Completed checks
+The tested game baseline is **Windows, Balatro 1.0.1o-FULL, Lovely 0.9.0 and Steamodded 26.829.0**. Focused checks and isolated Windows game scenarios cover saves, transactions, preparations, boss objectives, localized layouts and authoring workflows. Controlled scenarios, including forced outcomes, do not establish complete ordinary-campaign coverage or settled balance.
 
-The player candidate was installed from its ZIP into a separate Mods directory
-with **Windows, Balatro 1.0.1o-FULL, Lovely 0.9.0 and Steamodded 26.829.0**.
-A separate save identity kept the native acceptance run away from personal data.
-The test driver used actual game objects, UI callbacks and save workers. Some
-wins, losses, mask and Intermission states were prepared programmatically; this
-was integration acceptance, not a claim of completing ordinary player campaigns.
+## Player-facing limitations
 
-- 27 Lua specification suites pass, including 179 recovery and 32 runtime-audio
-  checks. All seven manifest patches compile against the installed game; the
-  save-worker probe and queued save routing are covered separately.
-- The native game loaded the unpacked candidate and acknowledged critical save
-  patches. The shop, purchase/Use, preparation, start and a full process restart
-  passed. The saved run resumed without applying its resources twice.
-- Native win/loss/abandon, mask acknowledgement and Intermission accept/decline
-  passed. A simulated campaign-write failure showed one recovery window; the
-  native Retry button saved the original loss without duplicating history.
-- Both campaign slots were deliberately corrupted only in the isolated profile.
-  The game showed a save-error window without overwriting them, then loaded the
-  restored files through Retry.
-- The ordinary run save remained byte-identical during Showstreak operations and
-  was subsequently resumed. In-memory voice registration, separate voice/effect
-  preferences, the frame 7 -> 6 return and reduced-motion idle were exercised.
-- Both 1x and 2x portrait assets were actually reloaded and checked. A separate
-  smoke test with Pantomime Paradox 1.16.0 passed shop/start/save/resume and
-  ordinary-save isolation in its default configuration; extra PP modes were not
-  enabled.
-- Native EN/RU/zh_CN UI was checked at 1280x720. All 15 locales have automated
-  coverage; older native checks covered the full locale set.
-- A separate LÖVE check confirmed that all four voices generated in memory are
-  byte-identical to the previous processed WAV files. No voice WAV is shipped.
-- The API guide and starter passed 12 example scenarios using the real API/core
-  under LuaJIT. PDF pages were rendered and visually checked.
+- **Lore remains in development.** The normal Lore screen retains the profile's Dark Stars but offers no player story catalog. The separate Lore Workshop is an authoring tool.
+- **Back up the campaign and current run together.** Each profile uses `showstreak-a.jkr`, `showstreak-b.jkr` and `showstreak-run.jkr`. The campaign pair alone cannot reconstruct a missing current run. Settings and personal presets are separate.
+- **Required save updates need confirmation.** Showstreak verifies a backup first. A failed backup or changed source blocks the operation. Deferring leaves the source untouched but prevents continuation until a required update is completed. Restore is in **Mods → Showstreak → Saves** and first creates a safety backup of the current state. Returning to an older mod requires its matching backup; reverse migration is not provided.
+- **Adding new content is a separate choice.** Existing series retain rules, offers and definitions except for explicitly previewed compatibility corrections. **Rules → Add new content** can add compatible missing entries between runs. Installing an update alone does not give an older series the entire new catalog.
+- **Keep required mods installed.** A missing provider can block continuation. An integration badge does not certify all of another mod's behavior. Undeclared boss schedules, action restrictions and starting grants may need an adapter.
+- **Some starting combinations are unavailable.** A selected starting addition that lacks information about its starting Jokers cannot safely combine with Blue Skittles or Red Brain. Choosing no starting addition remains available. Old saves do not silently acquire missing information from a later registration.
+- **Boss-objective Bets have specific restrictions.** Only one boss schedule can be accepted, including On a Needle. Assigned ordinary bosses appear one Ante before the target and must meet their own minimum Ante. External schedules or boss bans may make a Bet unavailable. Completing a task earns its bonus only when the whole run is also won.
+- **Translations and balance still benefit from player feedback.** Fifteen locales have coverage and formatting checks, plus targeted layout checks. This does not mean every line has been edited by a native speaker. Long-term campaign statistics have not established the balance of every new price, chance and reward.
+- **Platform testing is Windows-focused.** Native macOS, Linux and Steam Deck play, every newer loader release, all mod combinations, every small-window layout and physical-controller play have not been comprehensively validated.
+- **Voice and motion are adjustable.** Voice, effect sounds and reduced motion have separate settings. Matching mouth animation exists for only part of Showman's expression set; other reactions retain their authored drawings while speaking.
 
-## Intentional limits and remaining manual checks
+The 1.2.0 release corrected The Needle interaction reported in [issue #1](https://github.com/TraditionalDimension/Showstreak/issues/1), along with related boss-resource handling. If a similar problem occurs in 1.3.0, report the exact versions, accepted Bets and other mods instead of assuming the earlier cause.
 
-- **Lore is future content.** Dark Stars accumulate per profile; this version has
-  no Lore purchases, unlockable entries or story chapters.
-- **Campaign and run recovery differ.** A/B protects campaign progress; the run
-  has one showstreak-run.jkr. Back up all three files together. No recovery of
-  every missing/corrupted run snapshot is promised.
-- **Existing series keep their rules/catalog.** New content or Intermission
-  policies do not silently enter old saves. Missing required providers may block
-  continuation. Modded decks require adapters.
-- **Showman uses eight frames.** There are no separate mouth drawings for every
-  expression. Reactions return to idle and voice can be disabled separately.
-- Physical controller use, comfortable sound levels, smaller windows and normal
-  play on Easy/Standard/Hard still need author/player evaluation. Tests do not
-  measure balance, pacing or native-speaker quality of all translations.
-- Linux, macOS, Steam Deck, arbitrary mod collections and every future loader
-  version are not certified by these Windows checks. A smoke test of one mod
-  combination cannot guarantee all of its gameplay hooks.
+## Authoring tools
 
-Report problems in the discussion accompanying the build/download. The
-[README](PLAYER_GUIDE_EN.md) lists useful diagnostics and backup files. Do not delete a
-failing save as the first troubleshooting step.
+The [Toolkit](TOOLKIT.md) is separate from the player installation. Lore Workshop uses **LÖVE 11.5** and supports independent Russian/English interface and story-text selection. Its portable `.love` build can run without Balatro.
+
+Native Windows authoring and reader checks have been performed; other platforms have not received equivalent native acceptance. The editor does not support arbitrary Lua stories, nested runtime panels, native rotation/crop/filter fields, transform keyframes, a character library or marquee selection.
+
+Export remains **story schema 2**. Document history and authoring groups remain in project metadata, so keep the entire project folder to retain checkpoints and compound-object links. In-game development reading requires the explicit `Showstreak.lore_development = true` flag; it is not a released player story catalog.
+
+## Reporting a problem
+
+Use [GitHub Issues](https://github.com/TraditionalDimension/Showstreak/issues). Include the Showstreak, Balatro, Lovely and Steamodded versions, operating system, installed mods, steps to reproduce and relevant error text or logs. Keep an unchanged copy of a reproducibly failing save. Installation and backup paths are in the player guides.
 
 ## По-русски
 
-**Showstreak 1.0.0: первая публичная версия на [Nexus Mods](https://www.nexusmods.com/balatro/mods/947).** Проверки ниже относятся к испытанной сборке 1.0.0; публикация не расширяет область проверки.
+Основная проверенная среда — **Windows, Balatro 1.0.1o-FULL, Lovely 0.9.0 и Steamodded 26.829.0**. Изолированные игровые сценарии проверяют конкретные действия, но не заменяют обычные прохождения и длительную проверку баланса.
 
-Архив распакован в отдельную папку модов и проверен в настоящей игре на
-**Windows, Balatro 1.0.1o-FULL, Lovely 0.9.0, Steamodded 26.829.0**. Отдельная
-папка сохранений изолировала проверку от личного прогресса. Использовались
-настоящие объекты игры, экранные кнопки и поток записи. Некоторые состояния
-победы, поражения, масок и Антракта задавались программно: это проверка
-интеграции, а не прохождение обычных серий игроком.
+- **Лор пока в разработке.** Тёмные звёзды сохраняются, но обычный раздел ещё не предлагает каталог историй. Редактор предназначен для авторов.
+- **Сохраняйте вместе три файла профиля:** `showstreak-a.jkr`, `showstreak-b.jkr` и `showstreak-run.jkr`. Пара файлов серии не восстановит отсутствующий текущий забег. Настройки и личные наборы правил находятся отдельно.
+- **Перенос сохранения требует подтверждения и проверенной копии.** Отложенный перенос не меняет исходники, но нуждающуюся в нём серию пока нельзя продолжить. Восстановление находится во вкладке «Сохранения» конфига и сначала защищает текущее состояние копией. Обратного переноса формата нет; для старой версии нужна её старая копия.
+- **Новый контент добавляется отдельно между забегами.** Правила, предложения и определения старой серии сохраняются, кроме явно показанных исправлений совместимости. Установка обновления сама по себе не расширяет её каталог.
+- **Сохраняйте нужные серии моды.** Отметка об интеграции не гарантирует совместимость всех функций. Неподдержанные изменения боссов, запреты действий и стартовые предметы могут требовать адаптера.
+- **Не все сочетания начальных предметов доступны.** Дополнение без сведений о начальных джокерах нельзя безопасно совместить с Blue Skittles или Red Brain. Можно выбрать вариант без начального дополнения. Отсутствующие сведения старой серии не подменяются молча новой регистрацией.
+- **Одновременно принимается одна программа боссов**, включая On a Needle. Для бонуса нужно выполнить задание и выиграть весь забег. Конфликтующие расписания или запреты боссов могут сделать пари недоступным.
+- **Переводы и баланс нуждаются в обратной связи.** Полнота 15 локалей не равна проверке каждой строки носителем языка. Автоматические сценарии не устанавливают баланс цен, шансов и наград.
+- **Область проверки в основном ограничена Windows.** macOS, Linux, Steam Deck, все будущие загрузчики, сочетания модов, размеры окна и физический контроллер не прошли всеобъемлющую проверку.
+- **Голос и анимация настраиваются отдельно.** Не у всех выражений Шоумена есть совпадающие кадры рта; такие рисунки сохраняются во время речи.
 
-Пройдены 27 наборов Lua-тестов, включая 179 проверок восстановления и 32 проверки
-звука, а также проверка семи патчей и протокола потока записи. В самой игре
-проверены магазин, покупка/Use, подготовка, запуск, полный перезапуск процесса
-и продолжение без повторных бонусов; победа, поражение, прерывание, маски и
-принятие/отказ от Антракта.
+В 1.2.0 исправлена описанная в [issue #1](https://github.com/TraditionalDimension/Showstreak/issues/1) проблема The Needle и связанные взаимодействия ресурсов боссов. При похожем сбое в 1.3.0 укажите точные версии, принятые пари и остальные моды.
 
-При искусственном отказе записи поражения показано одно окно; кнопка «Повторить»
-сохранила исходную причину без повторной истории. После порчи обоих A/B-файлов
-только в тестовом профиле открылась ошибка без перезаписи данных; восстановленные
-файлы удалось прочитать повтором. Обычное сохранение не менялось от действий
-Showstreak и затем было продолжено.
+Редактор запускается отдельно через **LÖVE 11.5**. Языки интерфейса и истории выбираются независимо. Для сохранения версий и групп переносите целиком папку проекта. Экспорт использует story schema 2; история редактирования в `.sstory` не входит. Произвольные Lua-истории, вложенные игровые панели, поля поворота/обрезки/фильтров, ключевые кадры преобразований, библиотека персонажей и выделение рамкой не поддерживаются. Чтение историй в игре доступно в режиме разработки и не означает выпуск игрового каталога.
 
-Проверены регистрация голоса в памяти, раздельные настройки голоса/эффектов,
-переход 7 -> 6 и idle при уменьшении движения, интерфейс EN/RU/zh_CN при 1280x720.
-Для всех 15 локалей есть автопроверки и исторический полный просмотр. Отдельный
-LÖVE-прогон подтвердил побайтовое совпадение голосов в памяти с прежними WAV.
-Голосовые WAV в архив не включены. Текстуры 1x/2x действительно перезагружены
-и проверены. Отдельный короткий прогон с Pantomime Paradox 1.16.0 подтвердил
-магазин, старт, сохранение/продолжение и изоляцию обычного сохранения при
-стандартных настройках; дополнительные режимы PP не включались.
-Примеры API прошли 12 сценариев; PDF просмотрен
-после отрисовки страниц.
-
-Остаются осознанные ограничения: лор пока без покупок и глав; A/B не заменяет
-резервную копию run-файла; старые серии сохраняют прежний каталог; модовым колодам
-нужны адаптеры; Шоумен использует восемь кадров. Нужны обычные игры на трёх
-пресетах для оценки темпа, прослушивание автором, реальный геймпад, меньшие окна
-и редактура переводов носителями. Linux/macOS/Steam Deck, произвольные наборы
-модов и будущие загрузчики не объявляются проверенными.
-
-О проблемах сообщайте в обсуждении сборки/скачивания. Нужные сведения и файлы
-резервной копии перечислены в [русской инструкции](PLAYER_GUIDE_RU.md).
+Сообщайте об ошибках через [GitHub Issues](https://github.com/TraditionalDimension/Showstreak/issues), приложив версии, шаги, список модов и текст ошибки. Установка и резервные копии описаны в [русской инструкции](PLAYER_GUIDE_RU.md).
