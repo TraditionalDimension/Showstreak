@@ -21,12 +21,6 @@ This repository contains documentation and release notes. Install **Showstreak-B
 
 **Lore remains in development.** Dark Stars are retained, but the normal player Lore screen does not yet offer a story catalog. The Toolkit's Lore Workshop is an authoring tool.
 
-## Current release: 1.3.0
-
-Browse the new **Shop catalog**, inspect preparations and boss objectives in **Run Info**, and use the illustrated shop guide. The update adds preparation items, Ante-changing vouchers and conditions, boss-objective Bets, voucher packs and mixed packs. Bets are grouped by difficulty; the next-run panel makes the deck, stake, required Ante and readiness easier to inspect.
-
-Save updates explain the changes and require confirmation after a verified backup. Adding new content to an existing series is a separate choice between runs. See the [full changelog](CHANGELOG.md) and the [player guides](docs/PLAYER_GUIDE_EN.md) for details.
-
 ## Requirements and installation
 
 | Component | Requirement |
