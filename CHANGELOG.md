@@ -1,5 +1,35 @@
 # Changelog
 
+## 1.3.1 — 2026-10-05
+
+### Fixed
+
+- **Items inside packs:** held Props and Tricks can be used while a Showstreak pack is open. Choosing a target, cancelling a choice or closing an item result returns to the remaining pack rewards without losing a pick. Unavailable actions do not consume the item or a pack choice. This fixes [issue #3](https://github.com/TraditionalDimension/Showstreak/issues/3).
+- **Victory reward preview:** Run Info separates the base reward, earned bonuses and conditional bonuses. Boss objectives show their pending, completed or failed state; the extra stars from Dry Run are visible before they are earned. The bonus still requires both its objective and the whole run to be won, and cannot be paid twice after a reload. This addresses the reward-display part of [issue #2](https://github.com/TraditionalDimension/Showstreak/issues/2).
+- **Leaving a lost run:** Main Menu returns to Balatro's actual main menu before another series can start. Opening and closing settings after a defeat no longer leaves the player in the completed run.
+- **Automatic stake increases:** existing series no longer get stuck during preparation when a higher stake changes a resource baseline. Retained effects keep their saved values and follow the existing resource-bound rules.
+- **Save failures:** an action rejected because its save could not be confirmed no longer appears as successful after reloading. A successful retry applies the action once.
+- **Preparation and integrations:** invalid deck, stake or content changes are rejected before they can replace the current preparation. Errors in supported integration callbacks produce a short message and preserve the previous state.
+
+### Interface
+
+- Expanded the configuration's **Content catalog** with separate pages for all **100 shop items and 24 complications**, category filters, levels and Whole series / Tonight variants. Compatible additions retain their source labels.
+- Improved text shadows, secondary-label contrast and separation between Showstreak panels while preserving the existing colors and artwork. Light tooltip panels keep their dark text.
+- Completed localized **Custom** preset labels and the console-log setting across the supported languages.
+- Moved Run Info's page controls into their section headers so dense lists fit with Japanese, Korean and Chinese fonts.
+- Checked Run Info's source and metric page controls with large lists, including navigation in both directions and the first and last pages. Page changes preserve preparations, rewards and gameplay randomness.
+
+### Logs and Toolkit
+
+- Added **Mod Logs in Console**, off by default, for detailed troubleshooting. The Mods report includes the game and loader versions and supported integration features.
+- Strengthened API registration, action checks and callback handling. The public API remains **contract 1, revision 1.1.0**, and save schema remains **7**.
+- Updated the separate **Toolkit 1.3.1**, integration example, verification script and English/Russian guides, including the full PDF manuals.
+
+The content lineup, authored item and complication effects, and prices are unchanged. Automated checks and isolated Windows game tests cover the fixes, saves and interface; ordinary campaign balance and native-speaker review remain broader player checks.
+
+Thank you, [ARK-MAXIM](https://github.com/ARK-MAXIM), for reporting the pack-use problem and the reward-preview problem in [#3](https://github.com/TraditionalDimension/Showstreak/issues/3) and [#2](https://github.com/TraditionalDimension/Showstreak/issues/2).
+
+
 ## 1.3.0 — 2026-09-26
 
 ### Shop and presentation
