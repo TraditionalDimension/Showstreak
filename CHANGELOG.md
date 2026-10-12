@@ -1,5 +1,34 @@
 # Changelog
 
+## 1.3.2 — 2026-10-12
+
+### Fixed
+
+- **Scheduled Boss Bets:** the assigned boss is now selected through Steamodded's current blind-selection path, restoring the intended encounters and objective tracking for Dry Run and Fixed Blocking. Objective bonuses still require both the task and the whole run to be won, and remain protected against repeat payment after reload. Fixes the scheduled-boss problem reported by **ARK-MAXIM** in [issue #4](https://github.com/TraditionalDimension/Showstreak/issues/4).
+- **Blue Skittles:** using it immediately sets the current selected stake to Blue, whether the previous stake was higher or lower. Later preparation effects can change the stake again. Its Blueprint grant, Joker-slot cost and existing once-per-preparation rule retain their own behavior; descriptions clarify the stake assignment in all 15 languages.
+- **Leaving a series run:** Main Menu correctly returns to the game's menu between runs and after a loss, preserving the preparation or completed-series state.
+- **Preparation transactions:** native stake targets and resource combinations are validated before committing; refused actions preserve inventory, Stars and remaining pack choices.
+
+### Interface
+
+- Card tooltips preview concrete preparation changes, stake names, action costs and useful refusal reasons. Chance effects show probabilities without exposing a sampled outcome; pack rewards appear after purchase.
+- The content catalog adds localized-name/ID search and a source-mod filter, plus notices for entries included in or absent from the active series. Existing series retain their saved definitions; new content is added through Rules between runs.
+- Boss objectives show their first recorded failure reason and relevant hand/card counters. Unavailable Boss Bets explain conflicts and the one-programme limit.
+- The Mods tab adds **Copy problem report**, including versions, enabled integrations, preparation and objective status, and the last API diagnostic.
+
+### API and Toolkit
+
+- Added copied registration metadata and item eligibility queries, concrete `preview_item_action` results and a plain-text `get_diagnostic_report`.
+- Added immediate `set_stake` assignment by numeric level or stable native `stake_key`; key-based Blue selection supports reordered modded stake pools.
+- Added atomic `bonus_effects` for ordinary resource Props, Contracts and Vouchers, with existing lifetimes, bounds and save handling.
+- Field diagnostics identify the invalid field, expected contract and actual type/value. API contract **1**, revision **1.1.0** and save schema **7** remain unchanged; use the additive capabilities.
+- Updated the author documentation, added five minimal provider recipes and a general trusted-provider verifier for both load orders. The complete example, Lore Workshop and versioned 1.3.1 PDF manuals remain available.
+
+### Rules clarification
+
+- A run still accepts **one boss programme**, including programmes targeting different Antes. This explains the second question in [issue #4](https://github.com/TraditionalDimension/Showstreak/issues/4); an ordinary second Bet is still allowed.
+
+
 ## 1.3.1 — 2026-10-05
 
 ### Fixed
