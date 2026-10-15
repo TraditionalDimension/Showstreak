@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.3.3 — 2026-10-13
+
+### Interface
+
+- **Optional action previews:** the extra block below shop item descriptions is now controlled by **Action previews** in Showstreak's settings. It is **off by default**, including when upgrading a configuration without this setting. The selection is saved across restarts.
+- **Clearer enabled previews:** compact action headings, coloured resource labels and values, native Stars and localised stake names replace the plain text block. Buying, using a held item and selecting a pack reward have their own headings. Refused resource changes retain the exact minimum or maximum. Generic lines that repeat the item's description are omitted.
+- **Card presentation screens:** the new Act condition and Intermission offer have separate background panels for the heading, card and description.
+- **Run Info:** cards are centred over their source and detail captions, fixing the offset between Vouchers and labels such as Series. The existing eight-card pages display their arrows and page count on a separate panel when multiple pages are needed.
+- **End Series:** the button and its confirmation use a darker red, making them visually distinct from Main Menu.
+
+### Compatibility
+
+- Save schema **7**, API contract **1** and API revision **1.1.0** remain unchanged. Compatible existing series continue without a migration prompt; saves that require conversion retain the existing backup and confirmation flow.
+- The public `preview_item_action` API remains available independently of the display preference. Previews continue to use disposable data and keep random outcomes and unpurchased pack contents hidden.
+- New preference labels and preview headings are provided in all **15 supported languages**.
+
+
 ## 1.3.2 — 2026-10-12
 
 ### Fixed
