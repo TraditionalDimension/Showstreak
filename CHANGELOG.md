@@ -1,5 +1,59 @@
 # Changelog
 
+## 1.4.0 — 2026-10-18
+
+### Showlection
+
+- Added a profile collection of card variants retained when an eligible Showstreak run is won: **4,085 Joker forms and 8,340 playing-card forms**, for **12,425 original-game goals**. Owned Jokers and the whole remaining deck are checked at the final boss victory. Buying, using or playing a card alone is insufficient; sold and destroyed cards do not count. Debuffs and expired Perishable do not exclude a retained card.
+- Variants use original editions, enhancements, seals and compatible Eternal / Perishable / Rental states. Stone Cards share one identity regardless of their hidden suit or rank. Winning-stake badges and results are not part of this collection.
+- The optional **Mod collection** adds registered Joker identities, suits and ranks, while retaining the original modifier vocabulary. It is **off by default**. Custom editions, enhancements, seals, stickers and properties do not multiply the goals. Turning it off hides mod entries without deleting discoveries and skips the Original / Mods chooser.
+- Added native card grids, original/modded categories, search with cancellable drafts, discovered/undiscovered views, recent discoveries, filters, page controls and direct page entry. Returning from details or help restores the browsing context. Short windows show fewer card rows while retaining readable text.
+- Added an illustrated **?** guide with random original-game Joker and playing-card variants and one of the five original final bosses. Both sides of the example use the same retained variants. Details are available on hover or controller focus; examples do not award progress or advance gameplay randomness.
+- Undiscovered cards explain Showlection's own victory requirement. Undiscovered playing cards use the original Blue Deck back; undiscovered Jokers keep the native hidden-Joker artwork. Previews do not reveal hidden identities or modifiers.
+- Discoveries, the victory and Dark Stars share the verified A/B save transaction. Failed writes cannot award partial progress; retrying a result cannot grant the same discoveries twice. Optional discovery notifications open the new results safely.
+- Existing observations remain readable. A separate display projection merges old extended variants without erasing their raw records, inventing past victories or awarding duplicate discoveries. Earned entries remain archived when their provider is absent.
+
+### Interface and records
+
+- Compacted the floating menu into one row of **Streak / To Show / Best**, with labels above stable-width values. Pale gold-grey counter panels improve contrast; native hover behavior and exact-value tooltips remain. The Showstreak hub has separate collection, Lore and Dark Star controls. Dark Star displays use a consistent white plate.
+- Refined preparation, records, series details, Intermission and content-update screens around native Balatro panels, larger counters, short captions and explanatory tooltips. Intermission shows the actual quantities retained or reset. Confirmation consequences remain visible at every information level.
+- Added **Player information: Off / Only important / Detailed**, defaulting to **Only important**. It is independent of the existing optional Action previews, which remain off by default.
+- Records separate the personal maximum from records under comparable conditions. New series retain their starting conditions, confirmed record prefix and significant events. Older histories show what was actually recorded rather than reconstructed conditions.
+- Added keyboard arrows, Enter and Escape through native controller navigation on Showstreak panels, while preserving normal text-entry handling.
+- Added stable translations for the new collection, preparation, record and decision screens in all 15 supported locales, including their help and refusal messages. Replaced punctuation missing from the native fonts.
+- Refined shop audio using existing Balatro sounds: paid purchases, vouchers, pack wrappers, claims and item effects have appropriate cues. Failed or repeated actions do not play success cues. Free purchases omit payment sounds, and the effects preference also silences lucky-result animation sounds.
+
+### Saves and reward eligibility
+
+- Updated the profile format to **schema 8** with the existing explicit backup/update flow. Updating the format and adopting a new gameplay catalog are separate decisions. Existing earned rewards and frozen definitions are preserved; exact older conditions and card forms are not invented.
+- Rule assessment compares the actual rules with the supported references rather than trusting an official-looking preset name or import label. New series freeze their rules, supported deck pool and gameplay environment. Supported harder score multipliers and lower starting Stars can retain admission.
+- Adopting foreign gameplay content stops future Dark Star payouts, including the unfinished Act, while retaining earned Dark Stars and total wins. Changed or unavailable required providers cannot silently reinterpret a saved run.
+- Added a separately audited **Bunco11** ladder and six corresponding presets for Bunco **5.4.8c~JumboFork** with its default supported gameplay options. Its reward policy uses 1 / 2 / 3 Dark Stars per completed Act. Bunco's ordinal 8 is not treated as the original Gold Stake. These gameplay rules are independent of Showlection's stake-free display.
+- Saved custom effects resolve their exact provider/ID/version. Authors can retain a legacy handler alongside the current one. Missing versions block continuation with an explanation instead of replaying grants or switching to a newer effect.
+
+### Compatibility fixes
+
+- Checked Pantomime Paradox entities, Bunco's new Jokers and suits, UnStable's **75 Jokers and 52 playing-card fronts**, and CardSleeves **1.9.4**, individually and in the tested combinations with Pantomime. Fractional rank keys and declared card sizes are preserved. This is not certification of arbitrary mod mixtures.
+- Neutral collection previews bypass gameplay initialization and modifier application. They preserve live deck IDs, `used_jokers`, debuffs and gameplay randomness. Bunco previews no longer update real Jokers; UnStable tooltips receive bounded visual defaults without running gameplay initializers.
+- Original Joker previews now use their proper base X Mult, required initial display counters and native Half Joker / Photograph / Square Joker / Wee Joker proportions. To Do List tooltips no longer fail because a preview lacks its target hand. Standalone preview construction also preserves the used-Joker ledger.
+- CardSleeves previews no longer let Checkered change the shown suit or Abandoned change rank and consume randomness. Live sleeve state is restored after nested previews and errors; real cards keep their effects.
+- New sleeve-enabled series freeze the host and sleeve-provider versions. New starts and resumes check the chosen sleeve against the native save before construction. Disabled sleeve choices do not affect resources or inherit the ordinary menu's sleeve preference. Sleeve-enabled rules still require a separate Dark Star admission policy.
+- Reduced the starting-addition selection screen's height without shrinking text or artwork. Offer metadata and readiness checks no longer allocate discarded tooltip objects. Unused description titles and info blocks are released, fixing names accumulating in the corner of the screen.
+
+### API and Toolkit
+
+- Public API remains **contract 1**, now **revision 1.3.0**. Added structured definition validation, copied preparation/run/series views, action refusal reasons, exact effect-version queries, declarative preparation recipes, boss programs and pack pools. Capabilities must be checked before use.
+- Added collection metadata through `get_collection_info()`: `collection=1`, `collection_axes=0`, `modifier_policy='vanilla_only'` and `winning_stakes=false`. Legacy `register_collection_axis` calls remain load-compatible but create no goals or filters and their callbacks are not used by the current collection.
+- Updated the separate **Toolkit 1.4.0**, current API appendix, LuaLS schemas and annotations, examples and trusted-provider verifier. The verifier checks the actual host and both provider load orders; its model tests are distinct from native game acceptance.
+- Lore Workshop source, portable `.love`, assets, fonts, licenses and the historical **1.3.1 EN/RU PDF manuals** are preserved. Current changes are documented in Markdown. Story format remains **2**; normal player Lore remains **In development**.
+
+### Verification and scope
+
+- Focused logic tests and isolated Windows game checks cover collection policy, rule admission, transactions, provider changes, previews, UI navigation, saved starts and resumes. The release polish adds localization, guide, unknown-card tooltip and layout checks, including repeated opening/cleanup and multiple window sizes.
+- Personal saves and settings are protected by separate QA paths and before/after hashes. Native launch/resume checks use the real engine; completed-win observations used for payout and collection assertions are explicit test fixtures. Ordinary campaign balance, native-speaker review, physical controllers and other operating systems remain broader checks.
+- Larger new mechanics and further content-mod expansion are deferred to **1.4.1**. Fully restart Balatro after installing this update.
+
+
 ## 1.3.3 — 2026-10-13
 
 ### Interface
