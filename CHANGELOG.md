@@ -1,5 +1,45 @@
 # Changelog
 
+## 1.4.1 — 2026-10-20
+
+### Showman
+
+- Added **800 reactions in all 15 supported languages**, bringing the built-in total to **1,341**. Existing situations now have at least 16 eligible repeatable lines, with separate banks for native-shop actions, selected/unselected Partners and Sleeves, and collection discoveries. One-time tutorials are counted separately.
+- Added **16 profile-name asides each for 18 creators**: DrSpectred / Balatro University, Roffle, Northernlion, ZainoTV, GothicLordUK, Skoottie, Frost Prime, Aliensrock, Retromation, Olexa, Haelian, Rarran, RTGame, Dan Gheesling, MALF / michaelalfox, Sizaak, Bean and Focushock. Exact local aliases recognise stage names, not authenticated identities; no account or network lookup is performed. They appear in the Showstreak hub, including before a series exists. **Profile-name jokes** defaults on and follows the main dialogue setting.
+- Added 16 asides for **Cryptid** and eight each for **Pantomime Paradox, All in Jest, Extra Credit, Paperback and CardSleeves**. These recognise enabled, loaded mods by their manifest IDs. The original Cryptid Spectral card does not trigger a mod aside. Mod comments share a cooldown, follow the initial greeting and are excluded from loss screens.
+- Creator and mod asides share at most one displayed rare greeting per profile per application session. First-time teaching and important results retain priority. Renaming a profile or switching away and back does not reset that budget or the saved reaction history. Mod comments also retain their three-win cooldown between sessions.
+- Repeatable reactions now use saved shuffled bags: an eligible bank is exhausted before another cycle begins. Specific reaction priorities and one-time introductions remain supported. Only displayed reactions consume their place; speech uses its own randomness.
+- Added reactions to newly saved Showlection discoveries and original Legendary variants. Record and Act celebrations retain priority. A failed save, a repeat discovery or reopening the same result does not produce a new collection congratulations.
+
+### Showlection and interface
+
+- Reworked Run Info around a fixed overview of starting resources, one active-effect gallery and one page control. Removed repeated duration captions, bounded resource explanations and restored native deck-ability tooltips in preparation. Small resource labels use light ink while values retain their resource colours.
+- Gave Intermission reset values a wider two-by-two layout and aligned Sleeve/Partner choice buttons beneath two-line name slots. Secondary navigation and collection filters use quieter, consistent colours; preparation panels have a darker surface.
+- Shortened selected Lucky, starting-Joker, compound-effect and Boss Bet descriptions across all 15 locales without changing odds, penalties, rewards or duration. Blueprint and Brainstorm names follow the game's selected language. Catalogue technical details are optional; effects, costs and requirements remain available.
+- Fixed Showstreak's Reduced Motion setting for Lucky effects, added a one-time Lucky Curtain verdict and completed quiet feedback for successful deck changes, start choices and Intermission decisions. Ordinary shop refreshes cap entrance staggering; failed actions and redraws do not replay success cues.
+- Split config into five framed category pages with consistent category colours, a visible selected state and pagination for future groups and switches. Backups remains available beneath every category and through the existing Saves tab.
+- Gave backup entries Manual / Automatic labels and distinct accents, with a gold outline around the selection. New action buttons use consistent colours for creation, inspection, details, navigation and rollback confirmation; labels remain explicit.
+- Replaced the deck-change voucher icon with a short **Change** label in all 15 locales, kept its Star cost visible and removed the button tooltip.
+- Trimmed the illustrated discovery guide to its three steps and Dark Star eligibility row; removed the example, modifier, Conditions and Archive footer rows with guide tooltips both on and off.
+- Removed Lucky Curtain's redundant failed-roll line in every locale; its chance, Ante floor, alternative Star reward and duration are unchanged.
+- Clarified reachable original-game variants: the five Legendary Jokers have their base form and four editions in ordinary runs. Eternal Legendary forms from Challenges are outside collection goals. The original totals remain **4,085 Joker forms and 8,340 playing-card forms**; winning-stake badges remain excluded.
+- Added an optional `sstreak_collection_stickers` declaration for modded Joker centres. Providers can enumerate reachable original sticker combinations instead of relying on rarity alone. Declarations cannot enable incompatible stickers or Eternal + Perishable, or change the original Joker catalogue. Previously discovered forms outside the current catalogue remain browseable.
+- Added softly shaded number fields for the current and best streak on the main-menu sign. Existing sizing, tooltips and dragging remain supported.
+- Added brighter gold digits and a lightweight, glyph-masked gold sheen on the two menu counters. **Golden streak numbers** is enabled by default and can be switched off for plain gold. Reduced motion freezes the sheen; unsupported shaders fall back to plain colour.
+- Moved the opening explanation above New Series into a compact `?` tooltip beside the hub title. The full translated help remains available on hover or controller focus.
+- Added **Tooltips and ? icons**, enabled by default, across Showstreak menus, setup, shop, collection, results, records and config. Turning it off suppresses owned popups and hides help question marks. Unknown card/data markers keep their meaning; ordinary Balatro tooltips are unaffected.
+- Switching tooltips off also closes an already focused Showstreak popup immediately, including UI elements held only by their native UIBox.
+- Added a temporary **Guide tooltips** switch to Showlection's illustrated discovery guide. It starts **off on every entry**, covers the example cards as well as explanations and question marks, and cannot override the global preference. Redrawing the guide preserves the temporary choice and the same example cards and boss; leaving resets it.
+- Shortened Showstreak-owned help across the hub, collection, preparation, shop guide and config in all 15 locales. Removed repeated Legendary/archive paragraphs and whole-panel hover targets from the discovery guide; enabled explanations use small, focused question marks. Exact values, reset conditions and native card descriptions remain available.
+
+### Compatibility and Toolkit
+
+- Added manual checkpoints to the existing backup browser: choose a reason, add an optional 48-character Unicode note and save a verified copy of the Showstreak profile and its saved run. The reason is visible in the list; details include the saved mod versions. Creating a checkpoint does not advance the series or change its seed.
+- Kept player-facing save migrations and their automatic pre-update backups. Restoring a manual or automatic copy still previews the rollback, creates a verified copy of the current state first and uses the existing interrupted-restore recovery. Create and restore require leaving the native run; mod files and external mod settings are not part of the checkpoint.
+- Profile schema **8**, Showlection storage **1** and Showman memory **2** remain readable without a format migration. Missing cosmetic memory fields start empty; existing discoveries are retained.
+- API contract **1**, revision **1.3.1**, adds `showman_cycles=1` and `collection_sticker_policy=1`. Updated the separate Toolkit, collection notes and LuaLS metadata. Lore Workshop, assets, licences and historical PDF manuals are preserved.
+
+
 ## 1.4.0 — 2026-10-18
 
 ### Showlection
