@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.5.1 — 2026-11-08
+
+### Interface
+
+- Showlection pages and filters, settings categories, preset editing, backup lists and Lore development views now refresh inside their existing window. Changing a value no longer replays the window entrance. Controller focus is retained when its control remains available.
+- Separated window, panel, inset and card-well colours across the player interface. Collection progress and section headings now have a visibly lighter surface; blue, red and green interface text uses lighter ink on dark panels.
+- Rebuilt Dark Star Exchange with a framed paper heading, distinct balance/subtotal and receipt panels, aligned quantity controls, a paper quantity display and a marked active preset. Disabled controls remain distinct from available actions.
+- Both large debt/exchange counters now use a medium gold frame and a narrower, continuous blue/white/red ribbon that travels around the rounded perimeter. Reduced Motion holds the ribbon still; a shader fallback preserves its colours.
+- Current and best streak cards on the main menu now use the same pale paper, grey rim and dark captions as the Showman's speech panels, with consistent spacing around the gold numbers.
+- Fixed cards and dynamic labels being created before pause when opening a standalone collection or settings screen directly.
+- Decorative separators now fall back to a supported glyph when the selected game font cannot draw them. Exchange receipts use count-neutral wording in the affected translations.
+
+
 ## 1.5.0 — 2026-11-08
 
 ### Additions
