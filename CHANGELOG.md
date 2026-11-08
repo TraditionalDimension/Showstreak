@@ -1,5 +1,39 @@
 # Changelog
 
+## 1.5.0 — 2026-11-08
+
+### Additions
+
+- Added the Showman's personal **US National Debt** challenge. Each profile keeps its own savings across series and losses; raise more than the displayed debt to complete the challenge.
+- Exchange Dark Stars for random whole payouts from **$100,000,000 to $100,000,000,000**, inclusive. Choose a batch, watch each result or reveal the full list. Results are saved before the reels start; skipping, reopening and repeated clicks do not purchase the same batch again. A batch stops when the challenge is completed and keeps its unspent Stars.
+- Winning runs contribute **final cash after Cash Out × money spent during that run**, with both factors rounded up. Purchases and paid shop/boss rerolls count; fines, free actions and between-run Stars do not. Runs already in progress are not backfilled.
+- Added optional **NG+ cycles** after completion. Start the current total again from zero while keeping Dark Stars and the history of cleared debts.
+- Added separate debt and exchange screens, mechanical digit counters, a compact completion screen and a saved result list. The title cards use parchment beneath curved glass, with animated flag/gold lettering and a readable shader-off fallback. Hints, dialogue, voice and Reduced Motion preferences remain supported.
+- Added one optional Treasury refresh per game launch, with cached and bundled data for offline play. The displayed target freezes when the challenge opens or a Showstreak run starts.
+
+### Showman
+
+- Added **361 further reactions in Russian and English**, bringing the built-in bank to **1,773** (**432 introduced in 1.5.0**). Every existing authored bank has at least four new repeatable lines, with separate variants for native-shop actions and selected/unselected Partners and Sleeves.
+- Added restrained meme-inspired jokes, including the requested loss remark, and more memories of Violet: matching hats, purple details, mime makeup and weekends together. Existing translated banks remain; these new lines use English outside Russian and English.
+- Uses the current pixel expressions and matching speech frames. No new sprite art replaces or expands the atlas. Profile-name and loaded-mod asides retain their existing recognition, cooldowns and rare-greeting limits.
+
+### Fixes
+
+- Fixed [#5](https://github.com/TraditionalDimension/Showstreak/issues/5): returning from new discoveries after a victory now restores the Showstreak result screen instead of exposing Endless Mode.
+- Fixed [#6](https://github.com/TraditionalDimension/Showstreak/issues/6): **Fresh Voucher** can be bought and stored in **Your Items** after the current voucher has been purchased. Applying it still requires an unsold voucher.
+- Fixed the Showman's portrait and speech remaining below the screen when opening the debt interface without Reduced Motion.
+- Neutral expressions now remain steady through their full speech. Toggling Reduced Motion preserves the current expression and remaining presentation time instead of resetting the Showman mid-sentence.
+- Reopening an exchange reads the saved receipt without replaying old reels or result appearances, including after a profile checkpoint restore.
+
+Thanks to [ARK-MAXIM](https://github.com/ARK-MAXIM) for reporting [#5](https://github.com/TraditionalDimension/Showstreak/issues/5) and [#6](https://github.com/TraditionalDimension/Showstreak/issues/6).
+
+### Compatibility and API
+
+- Retained API contract **1**, revision **1.3.1**, and profile schema **8**. Existing campaign definitions and normal win rewards remain compatible.
+- Goal money uses exact decimal totals. Safe ordinary Amulet values have a conservative adapter; when a modded monetary value cannot be counted reliably, only the debt contribution is skipped.
+- The separate **Showstreak Toolkit remains 1.4.1**. Its author tools, examples, historical manuals and Lore Workshop are unchanged; the whole Toolkit is not a player mod installation.
+
+
 ## 1.4.1 — 2026-10-20
 
 ### Showman
