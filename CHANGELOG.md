@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.5.2 — 2026-11-09
+
+### Interface and sound
+
+- Restyled Showstreak windows with a Balatro-inspired slate base, a gold rim and separate tones for panels, controls and card wells.
+- Replaced the illustrations in How to Play and the concealed Casting placeholders with native card objects. Removed the extra line below the guide tiles while keeping their topic tooltips.
+- Restyled the US National Debt and Dark Star Exchange screens with stepped pixel-art frames, a small flag badge, paper digit tiles with dark numerals and a receipt-style payout list.
+- Open packs now explain when your inventory is full. Rewards that require a slot are dimmed and can still be inspected. Freeing a slot returns controller focus to a claimable reward.
+- The defeat screen shows the finished series' wins, your current streak of zero and your personal best separately.
+- Intermission now labels its reset **Restart at Act 1**. The series keeps its wins and next run number.
+- A short sound marks the opening of the next act's shop. Lottery results and Star payouts appear with the first verdict note.
+
+### Fixes and compatibility
+
+- Fixed a crash when inspecting Boss Tag while a Bet delays the boss reroll.
+- Existing series remain compatible with save schema **8** and API contract **1**, revision **1.3.1**.
+
+### Separate Toolkit
+
+- Updated the Toolkit reference for Showstreak 1.5.2 and checked its LuaLS metadata and examples against the current API.
+- Lore Workshop checks imported story paths and unpacked asset sizes before creating a project. Newly imported stories reopen directly after relaunch.
+
+
 ## 1.5.1 — 2026-11-08
 
 ### Interface
